@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package Claw;
+
+message Claw
+{
+    float timestamp = 1;
+    float angle = 2;
+    float speed = 3;
+    float iq = 4;
+    int32 temperature = 5;
+}

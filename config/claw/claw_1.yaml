@@ -1,0 +1,45 @@
+id: 1
+addr:
+  claw:
+    ip: "0.0.0.0"
+    port: 5401
+  finger_0:
+    ip: "0.0.0.0"
+    port: 5402
+  finger_1:
+    ip: "0.0.0.0"
+    port: 5403
+  publisher:
+    ip: "0.0.0.0"
+    port: 6400
+
+motor:
+  bus_interface: socketcan
+  bus_channel: can1
+  motor_id: 1
+  Kp_s: 2.0e-5
+  Kp_b: 1.0e-4
+  Kd: 1.0e-4
+  iq_max: 10
+  angle_max: 360.0
+
+lead: 15.0
+gear_radius: 15.0
+
+camera_0:
+  name: Left Camera
+  params_path: "./config/camera/maixcam-e5b8.yaml"
+camera_1:
+  name: Right Camera
+  params_path: "./config/camera/maixcam-3fed.yaml"
+
+finger_net_0:
+  name: Finger Net 0
+  model_path: "./models/FingerNet.onnx"
+
+finger_net_1:
+  name: Finger Net 1
+  model_path: "./models/FingerNet.onnx"
+
+phone:
+  params_path: "./config//phone/phone_1.yaml"

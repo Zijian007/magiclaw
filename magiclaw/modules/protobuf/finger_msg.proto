@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package Finger;
+
+message Finger
+{
+    float timestamp = 1;
+    bytes img = 2;
+    repeated float pose = 3;
+    repeated float force = 4;
+    repeated float node = 5;
+}

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package Camera;
+
+message Camera
+{
+    double timestamp = 1;
+    bytes img = 2;
+    int32 width = 3;
+    int32 height = 4;
+}
