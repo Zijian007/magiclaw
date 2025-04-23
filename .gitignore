@@ -177,5 +177,5 @@ test.py
 log/
 
 # config
-config/
+configs/
 *.yaml
