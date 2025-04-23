@@ -18,10 +18,11 @@ motor:
   bus_channel: can0
   motor_id: 1
   Kp_s: 2.0e-5
-  Kp_b: 1.0e-4
-  Kd: 1.0e-4
+  Kp_b: 5.0e-4
+  Kd: 5.0e-4
   iq_max: 10
-  angle_max: 360.0
+  angle_max: 384.0
+  mode: leader
 
 lead: 15.0
 gear_radius: 15.0

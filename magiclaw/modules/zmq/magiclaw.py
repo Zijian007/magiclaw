@@ -53,9 +53,10 @@ class MagiClawPublisher:
     def publishMessage(
         self,
         claw_angle: float = 0.0,
-        claw_speed: float = 0.0,
-        claw_iq: float = 0.0,
-        claw_temp: int = 0,
+        motor_angle: float = 0.0,
+        motor_speed: float = 0.0,
+        motor_iq: float = 0.0,
+        motor_temperature: int = 0,
         img_0_bytes: bytes = b"",
         pose_0: np.ndarray = np.array([]),
         force_0: np.ndarray = np.array([]),
@@ -82,9 +83,10 @@ class MagiClawPublisher:
         # Set the message
         self.magiclaw.timestamp = datetime.now().timestamp()
         self.magiclaw.claw.angle = claw_angle
-        self.magiclaw.claw.speed = claw_speed
-        self.magiclaw.claw.iq = claw_iq
-        self.magiclaw.claw.temperature = claw_temp
+        self.magiclaw.claw.motor.angle = motor_angle
+        self.magiclaw.claw.motor.speed = motor_speed
+        self.magiclaw.claw.motor.iq = motor_iq
+        self.magiclaw.claw.motor.temperature = motor_temperature
         self.magiclaw.finger_0.img = img_0_bytes
         self.magiclaw.finger_0.pose[:] = pose_0.flatten().tolist()
         self.magiclaw.finger_0.force[:] = force_0.flatten().tolist()
@@ -167,9 +169,10 @@ class MagiClawSubscriber:
         
         # Unpack the message
         claw_angle = self.magiclaw.claw.angle
-        claw_speed = self.magiclaw.claw.speed
-        claw_iq = self.magiclaw.claw.iq
-        claw_temperature = self.magiclaw.claw.temperature
+        motor_angle = self.magiclaw.claw.motor.angle
+        motor_speed = self.magiclaw.claw.motor.speed
+        motor_iq = self.magiclaw.claw.motor.iq
+        motor_temperature = self.magiclaw.claw.motor.temperature
         finger_0_img = self.magiclaw.finger_0.img
         finger_0_pose = np.array(self.magiclaw.finger_0.pose)
         finger_0_force = np.array(self.magiclaw.finger_0.force)
@@ -186,9 +189,10 @@ class MagiClawSubscriber:
         
         return (
             claw_angle,
-            claw_speed,
-            claw_iq,
-            claw_temperature,
+            motor_angle,
+            motor_speed,
+            motor_iq,
+            motor_temperature,
             finger_0_img,
             finger_0_pose,
             finger_0_force,

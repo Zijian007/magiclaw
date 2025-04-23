@@ -76,10 +76,12 @@ def standalone_claw_process(
 
             # Publish the data
             claw_publisher.publishMessage(
-                angle=claw.claw_angle,
-                speed=claw.motor_speed,
-                iq=claw.motor_iq,
-                temperature=claw.motor_temperature,
+                claw_angle=claw.claw_angle,
+                motor_angle=claw.motor_angle,
+                motor_angle_percent=claw.motor_angle_percent,
+                motor_speed=claw.motor_speed,
+                motor_iq=claw.motor_iq,
+                motor_temperature=claw.motor_temperature,
             )
 
             # Fix the loop time
@@ -160,8 +162,8 @@ def bilateral_claw_process(
 
             # Get bilateral motor status
             try:
-                bilateral_angle, bilateral_speed, _, _ = (
-                    bilateral_subscriber.subscribeMessage(timeout=0.02)
+                _, _, bilateral_motor_angle_percent, bilateral_motor_speed, _, _ = (
+                    bilateral_subscriber.subscribeMessage(timeout=5)
                 )
             except Exception as e:
                 # Handle exception and log error
@@ -170,13 +172,13 @@ def bilateral_claw_process(
                     logger.error(f"Error in bilateral subscriber: {str(e)}")
                     log_count = 0
                 # If no message is received, set default values
-                bilateral_angle = None
-                bilateral_speed = None
+                bilateral_motor_angle_percent = None
+                bilateral_motor_speed = None
 
             # Control the claw
             claw.bilateral_spring_damping_control(
-                bilateral_angle=bilateral_angle,
-                bilateral_speed=bilateral_speed,
+                bilateral_motor_angle_percent=bilateral_motor_angle_percent,
+                bilateral_motor_speed=bilateral_motor_speed,
                 target_angle=0.0,
             )
 
@@ -187,10 +189,12 @@ def bilateral_claw_process(
 
             # Publish the data
             claw_publisher.publishMessage(
-                angle=claw.claw_angle,
-                speed=claw.motor_speed,
-                iq=claw.motor_iq,
-                temperature=claw.motor_temperature,
+                claw_angle=claw.claw_angle,
+                motor_angle=claw.motor_angle,
+                motor_angle_percent=claw.motor_angle_percent,
+                motor_speed=claw.motor_speed,
+                motor_iq=claw.motor_iq,
+                motor_temperature=claw.motor_temperature,
             )
 
             # Fix the loop time
@@ -377,15 +381,17 @@ def publish_process(
         while True:
             # Get claw data
             try:
-                claw_angle, claw_speed, claw_iq, claw_temp = (
+                claw_angle, motor_angle, motor_angle_percent, motor_speed, motor_iq, motor_temperature = (
                     claw_subscriber.subscribeMessage()
                 )
             except Exception as e:
                 logger.error(f"Error in claw subscriber: {str(e)}")
                 claw_angle = 0.0
-                claw_speed = 0.0
-                claw_iq = 0.0
-                claw_temp = 0.0
+                motor_angle = 0.0
+                motor_angle_percent = 0.0
+                motor_speed = 0.0
+                motor_iq = 0.0
+                motor_temperature = 0.0
 
             # Get finger 0 data
             try:
@@ -414,9 +420,10 @@ def publish_process(
             # Publish the data
             magiclaw_publisher.publishMessage(
                 claw_angle=claw_angle,
-                claw_speed=claw_speed,
-                claw_iq=claw_iq,
-                claw_temp=claw_temp,
+                motor_angle=motor_angle,
+                motor_speed=motor_speed,
+                motor_iq=motor_iq,
+                motor_temperature=motor_temperature,
                 img_0_bytes=img_0_bytes,
                 pose_0=pose_0,
                 force_0=force_0,

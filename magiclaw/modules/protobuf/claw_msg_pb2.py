@@ -13,13 +13,15 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x63law_msg.proto\x12\x04\x43law\"X\n\x04\x43law\x12\x11\n\ttimestamp\x18\x01 \x01(\x02\x12\r\n\x05\x61ngle\x18\x02 \x01(\x02\x12\r\n\x05speed\x18\x03 \x01(\x02\x12\n\n\x02iq\x18\x04 \x01(\x02\x12\x13\n\x0btemperature\x18\x05 \x01(\x05\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x63law_msg.proto\x12\x04\x43law\"]\n\x05Motor\x12\r\n\x05\x61ngle\x18\x01 \x01(\x02\x12\x15\n\rangle_percent\x18\x02 \x01(\x02\x12\r\n\x05speed\x18\x03 \x01(\x02\x12\n\n\x02iq\x18\x04 \x01(\x02\x12\x13\n\x0btemperature\x18\x05 \x01(\x05\"D\n\x04\x43law\x12\x11\n\ttimestamp\x18\x01 \x01(\x02\x12\r\n\x05\x61ngle\x18\x02 \x01(\x02\x12\x1a\n\x05motor\x18\x03 \x01(\x0b\x32\x0b.Claw.Motorb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'claw_msg_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _CLAW._serialized_start=24
-  _CLAW._serialized_end=112
+  _MOTOR._serialized_start=24
+  _MOTOR._serialized_end=117
+  _CLAW._serialized_start=119
+  _CLAW._serialized_end=187
 # @@protoc_insertion_point(module_scope)

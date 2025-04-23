@@ -2,12 +2,19 @@ syntax = "proto3";
 
 package MagiClaw;
 
-message Claw
+message Motor
 {
     float angle = 1;
     float speed = 2;
     float iq = 3;
     int32 temperature = 4;
+}
+
+message Claw
+{
+    float timestamp = 1;
+    float angle = 2;
+    Motor motor = 3;
 }
 
 message Finger

@@ -23,9 +23,9 @@ class Claw:
         angle_max: int,
         lead: float,
         gear_radius: float,
-        angle_deadband: int = 10,
-        speed_deadband: int = 10,
-        motor_mode: str = None,
+        motor_angle_deadband: int = 10,
+        motor_speed_deadband: int = 10,
+        mode: str = None,
     ) -> None:
         """Claw initialization.
 
@@ -73,16 +73,21 @@ class Claw:
         self.motor_angle = 0
         self.motor_angle_min = 0
         self.motor_angle_max = angle_max
+        self.motor_angle_percent = 0
         self.motor_speed = 0
         self.motor_iq = 0
         self.motor_temperature = 0
         self.claw_angle = 0
-        self.angle_deadband = angle_deadband
-        self.speed_deadband = speed_deadband
-        self.motor_mode = motor_mode
+        self.motor_angle_deadband = motor_angle_deadband
+        self.motor_speed_deadband = motor_speed_deadband
+        self.mode = mode
 
         # Read motor status
         self.read_motor_status()
+
+        print(
+            f"Motor Angle: {self.motor_angle} deg\nMotor Speed: {self.motor_speed} dps\nMotor IQ: {self.motor_iq} A"
+        )
 
         # Set motor to the initial position
         self.init()
@@ -109,11 +114,13 @@ class Claw:
         motor_angle_min = self.motor.read_multi_turn_angle()
 
         # Calculate the offset
-        self.motor_angle_offset = motor_angle_min / 100
+        self.motor_angle_offset = motor_angle_min / 100.0
         self.motor_angle_min = 0
 
         # Set the motor to the initial position
-        self.motor.multi_turn_position_control(int(self.motor_angle_offset * 100), 1000)
+        self.motor.multi_turn_position_control(
+            int(self.motor_angle_offset * 100.0), 1000
+        )
 
     def open(self) -> None:
         """Open the motor."""
@@ -179,8 +186,11 @@ class Claw:
         try:
             # Read the motor angle
             motor_angle = self.motor.read_multi_turn_angle()
-            self.motor_angle = motor_angle / 100 - self.motor_angle_offset
+            self.motor_angle = motor_angle / 100.0 - self.motor_angle_offset
             self.claw_angle = self._motor_angle_to_claw_angle(self.motor_angle)
+            self.motor_angle_percent = (self.motor_angle - self.motor_angle_min) / (
+                self.motor_angle_max - self.motor_angle_min
+            )
 
             # Read the motor temperature, iq, speed
             motor_temperature, motor_iq, motor_speed, _ = (
@@ -206,7 +216,7 @@ class Claw:
         motor_angle = self._claw_angle_to_motor_angle(angle)
         # Set the target position
         self.motor.multi_turn_position_control(
-            int((motor_angle + self.motor_angle_offset) * 100), speed
+            int((motor_angle + self.motor_angle_offset) * 100.0), speed
         )
 
     def torque_control(self, iq: float) -> None:
@@ -238,7 +248,7 @@ class Claw:
         self.read_motor_status()
 
         # Calculate the error
-        error = (self.motor_angle - target_angle) * 100
+        error = (self.motor_angle - target_angle) * 100.0
 
         # Calculate the target current
         iq = -self.Kp_s * error - self.Kd * self.motor_speed
@@ -270,13 +280,13 @@ class Claw:
         self.read_motor_status()
 
         # Calculate the error
-        angle_error = (self.motor_angle - bilateral_angle) * 100
+        angle_error = (self.motor_angle - bilateral_angle) * 100.0
         speed_error = self.motor_speed - bilateral_speed
 
         # Apply deadband
-        if abs(angle_error) < self.angle_deadband:
+        if abs(angle_error) < self.motor_angle_deadband:
             angle_error = 0
-        if abs(speed_error) < self.speed_deadband:
+        if abs(speed_error) < self.motor_speed_deadband:
             speed_error = 0
 
         # Calculate the target current
@@ -290,8 +300,8 @@ class Claw:
 
     def bilateral_spring_damping_control(
         self,
-        bilateral_angle,
-        bilateral_speed,
+        bilateral_motor_angle_percent,
+        bilateral_motor_speed,
         target_angle: float = 0.0,
     ) -> None:
         """Bilateral spring damping control.
@@ -311,26 +321,35 @@ class Claw:
 
         # Read the motor status
         self.read_motor_status()
-        
+
         # Check if bilateral angle and speed are valid
-        if bilateral_angle is None or bilateral_speed is None:
+        if bilateral_motor_angle_percent is None or bilateral_motor_speed is None:
             bilateral_angle_error = 0
             bilateral_speed_error = 0
         else:
+            # Convert the bilateral angle percent to the motor angle
+            bilateral_motor_angle = (
+                self.motor_angle_min
+                + (self.motor_angle_max - self.motor_angle_min) * bilateral_motor_angle_percent
+            )
             # Calculate the error
-            bilateral_angle_error = (self.motor_angle - bilateral_angle) * 100
-            bilateral_speed_error = self.motor_speed - bilateral_speed
+            bilateral_angle_error = (self.motor_angle - bilateral_motor_angle) * 100.0
+            bilateral_speed_error = self.motor_speed - bilateral_motor_speed
             # Apply deadband
-            if abs(bilateral_angle_error) < self.angle_deadband:
+            if abs(bilateral_angle_error) < self.motor_angle_deadband:
                 bilateral_angle_error = 0
-            if abs(bilateral_speed_error) < self.speed_deadband:
+            if abs(bilateral_speed_error) < self.motor_speed_deadband:
                 bilateral_speed_error = 0
-        
-        target_angle_error = (self.motor_angle - target_angle) * 100
+
+        if self.mode == "leader":
+            # Spring damping control
+            target_angle_error = (self.motor_angle - target_angle) * 100.0
+        elif self.mode == "follower":
+            target_angle_error = 0
 
         # Calculate the target current
         iq = (
-            -self.Kp_b * bilateral_angle_error
+            - self.Kp_b * bilateral_angle_error
             - self.Kd * bilateral_speed_error
             - self.Kp_s * target_angle_error
         )
@@ -376,5 +395,7 @@ if __name__ == "__main__":
                     f"Angle: {claw.motor_angle} deg, Speed: {claw.motor_speed} dps, IQ: {claw.motor_iq} A"
                 )
         except KeyboardInterrupt:
-            claw.stop()
             print("\nClaw Stopped.")
+
+    # Release the motor
+    claw.stop()

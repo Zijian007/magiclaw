@@ -45,10 +45,12 @@ class ClawPublisher:
 
     def publishMessage(
         self,
-        angle: float = 0.0,
-        speed: float = 0.0,
-        iq: float = 0.0,
-        temperature: int = 0,
+        claw_angle: float = 0.0,
+        motor_angle: float = 0.0,
+        motor_angle_percent: float = 0.0,
+        motor_speed: float = 0.0,
+        motor_iq: float = 0.0,
+        motor_temperature: int = 0,
     ) -> None:
         """Publish the message.
 
@@ -61,10 +63,12 @@ class ClawPublisher:
 
         # Set the message
         self.claw.timestamp = datetime.now().timestamp()
-        self.claw.angle = angle
-        self.claw.speed = speed
-        self.claw.iq = iq
-        self.claw.temperature = temperature
+        self.claw.angle = claw_angle
+        self.claw.motor.angle = motor_angle
+        self.claw.motor.angle_percent = motor_angle_percent
+        self.claw.motor.speed = motor_speed
+        self.claw.motor.iq = motor_iq
+        self.claw.motor.temperature = motor_temperature
 
         # Publish the message
         self.publisher.send(self.claw.SerializeToString())
@@ -138,7 +142,14 @@ class ClawSubscriber:
             self.claw.ParseFromString(self.subscriber.recv())
         else:
             raise zmq.ZMQError("No message received within the timeout period.")
-        return self.claw.angle, self.claw.speed, self.claw.iq, self.claw.temperature
+        return (
+            self.claw.angle,
+            self.claw.motor.angle,
+            self.claw.motor.angle_percent,
+            self.claw.motor.speed,
+            self.claw.motor.iq,
+            self.claw.motor.temperature,
+        )
 
     def close(self):
         """Close ZMQ socket and context to prevent memory leaks."""
