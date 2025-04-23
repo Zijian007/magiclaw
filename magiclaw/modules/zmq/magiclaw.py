@@ -143,15 +143,25 @@ class MagiClawSubscriber:
         self.magiclaw = magiclaw_msg_pb2.MagiClaw()
 
         print("Package Claw")
+        print("Message Motor")
+        print(
+            "{\n\tfloat angle = 1;\n\tfloat speed = 2;\n\tfloat iq = 3;\n\tint32 temperature = 4;\n}"
+        )
+        print("Message Claw")
+        print(
+            "{\n\tfloat angle = 1;\n\tMotor motor = 2;\n}"
+        )
         print("Message Finger")
         print(
             "{\n\tbytes img = 1;\n\trepeated float pose = 2;\n\trepeated float force = 3;\n\trepeated float node = 4;\n}"
         )
         print("Message Phone")
-        print("{\n\tbytes color_img = 1;\n\trepeated int32 depth_img = 2\n}")
-        print("Message Claw")
         print(
-            "{\n\tdouble timestamp = 1;\n\tfloat angle = 2;\n\tfloat speed = 3;\n\tfloat iq = 4;\n\tFinger finger_0 = 5;\n\tFinger finger_1 = 6;\n}"
+            "{\n\tbytes color_img = 1;\n\trepeated int32 depth_img = 2\n\trepeated int32 depth_width = 3\n\trepeated int32 depth_height = 4\n}"
+        )
+        print("Message MagiClaw")
+        print(
+            "{\n\tfloat timestamp = 1;\n\tClaw claw = 2;\n\tFinger finger_0 = 3;\n\tFinger finger_1 = 4;\n\tPhone phone = 5;\n}"
         )
 
         print("Claw Subscriber Initialization Done.")

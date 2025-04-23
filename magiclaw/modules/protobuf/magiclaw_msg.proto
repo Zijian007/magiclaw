@@ -12,9 +12,8 @@ message Motor
 
 message Claw
 {
-    float timestamp = 1;
-    float angle = 2;
-    Motor motor = 3;
+    float angle = 1;
+    Motor motor = 2;
 }
 
 message Finger
