@@ -65,7 +65,7 @@ parser.add_argument(
     "--id",
     type=int,
     default=0,
-    help="The ID of the USB camera.",
+    help="The ID of the USB camera (default: 0).",
 )
 parser.add_argument(
     "--addr",
@@ -77,13 +77,13 @@ parser.add_argument(
     "--width",
     type=int,
     default=320,
-    help="The width of the image.",
+    help="The width of the image (default: 320).",
 )
 parser.add_argument(
     "--height",
     type=int,
     default=240,
-    help="The height of the image.",
+    help="The height of the image (default: 240).",
 )
 args = parser.parse_args()
 

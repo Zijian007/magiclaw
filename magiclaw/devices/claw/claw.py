@@ -20,7 +20,7 @@ class Claw:
         Kp_s: float,
         Kd: float,
         iq_max: float,
-        angle_max: int,
+        angle_range: int,
         lead: float,
         gear_radius: float,
         motor_angle_deadband: int = 10,
@@ -71,8 +71,7 @@ class Claw:
         # Set parameters
         self.motor_angle_offset = 0
         self.motor_angle = 0
-        self.motor_angle_min = 0
-        self.motor_angle_max = angle_max
+        self.motor_angle_range = angle_range
         self.motor_angle_percent = 0
         self.motor_speed = 0
         self.motor_iq = 0
@@ -82,19 +81,18 @@ class Claw:
         self.motor_speed_deadband = motor_speed_deadband
         self.mode = mode
 
+        # Set motor to the initial position
+        self.init()
+        print("Claw Init.")
+        print("Motor Angle Offset: ", self.motor_angle_offset)
+        print("Motor Angle Range: ", self.motor_angle_range)
+        
         # Read motor status
         self.read_motor_status()
 
         print(
             f"Motor Angle: {self.motor_angle} deg\nMotor Speed: {self.motor_speed} dps\nMotor IQ: {self.motor_iq} A"
         )
-
-        # Set motor to the initial position
-        self.init()
-        print("Claw Init.")
-        print("Motor Angle Offset: ", self.motor_angle_offset)
-        print("Motor Angle Min: ", self.motor_angle_min)
-        print("Motor Angle Max: ", self.motor_angle_max)
 
         print("Claw Initialization Done.")
         print("{:-^80}".format(""))
@@ -111,11 +109,7 @@ class Claw:
         # Set the motor to the minimum angle (open)
         self.open()
         time.sleep(1)
-        motor_angle_min = self.motor.read_multi_turn_angle()
-
-        # Calculate the offset
-        self.motor_angle_offset = motor_angle_min / 100.0
-        self.motor_angle_min = 0
+        self.motor_angle_offset = self.motor.read_multi_turn_angle() / 100.0
 
         # Set the motor to the initial position
         self.motor.multi_turn_position_control(
@@ -125,12 +119,12 @@ class Claw:
     def open(self) -> None:
         """Open the motor."""
 
-        self.motor.torque_loop_control(-150)
+        self.motor.torque_loop_control(-100)
 
     def close(self) -> None:
         """Close the motor."""
 
-        self.motor.torque_loop_control(150)
+        self.motor.torque_loop_control(100)
 
     def stop(self) -> None:
         """Stop the motor."""
@@ -153,7 +147,7 @@ class Claw:
         """
 
         # Convert the motor angle to the lead distance
-        lead_distance = (self.motor_angle_max - angle) / 360.0 * self.lead
+        lead_distance = (self.motor_angle_range - angle) / 360.0 * self.lead
         # Convert the lead distance to the claw angle
         claw_angle = lead_distance / (2 * np.pi * self.gear_radius) * 360.0
         return claw_angle
@@ -171,7 +165,7 @@ class Claw:
         # Convert the claw angle to the lead distance
         lead_distance = angle / 360.0 * (2 * np.pi * self.gear_radius)
         # Convert the lead distance to the motor angle
-        motor_angle = self.motor_angle_max - lead_distance / self.lead * 360.0
+        motor_angle = self.motor_angle_range - lead_distance / self.lead * 360.0
         return motor_angle
 
     def read_motor_status(self):
@@ -188,9 +182,7 @@ class Claw:
             motor_angle = self.motor.read_multi_turn_angle()
             self.motor_angle = motor_angle / 100.0 - self.motor_angle_offset
             self.claw_angle = self._motor_angle_to_claw_angle(self.motor_angle)
-            self.motor_angle_percent = (self.motor_angle - self.motor_angle_min) / (
-                self.motor_angle_max - self.motor_angle_min
-            )
+            self.motor_angle_percent = self.motor_angle / self.motor_angle_range
 
             # Read the motor temperature, iq, speed
             motor_temperature, motor_iq, motor_speed, _ = (
@@ -328,10 +320,7 @@ class Claw:
             bilateral_speed_error = 0
         else:
             # Convert the bilateral angle percent to the motor angle
-            bilateral_motor_angle = (
-                self.motor_angle_min
-                + (self.motor_angle_max - self.motor_angle_min) * bilateral_motor_angle_percent
-            )
+            bilateral_motor_angle = self.motor_angle_range * bilateral_motor_angle_percent
             # Calculate the error
             bilateral_angle_error = (self.motor_angle - bilateral_motor_angle) * 100.0
             bilateral_speed_error = self.motor_speed - bilateral_motor_speed
