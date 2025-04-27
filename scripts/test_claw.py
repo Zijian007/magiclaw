@@ -2,14 +2,18 @@
 
 """
 Claw connection test
+=================
 
 This script is to test the claw connection.
 It initializes the claw based on the provided parameter file.
 It controls the claw to finish 3 cycles of opening and closing.
 
-Example usage:
+Usage:
+-----------------
 
-```bash
+To run the script, use the following command:
+
+```
 python test_claw.py --params_path <params_path>
 ```
 

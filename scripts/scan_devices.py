@@ -2,13 +2,17 @@
 
 """
 Network Device Scanner
+=====================
 
 This script is to detect all devices on the local network and print their information
 including IP address, MAC address, and hostname.
 
+Usage
+-----------------
+
 To use this script, run it with the following command:
 
-```bash
+```
 python scan_devices.py -i <interface> -r <network_range> -o <output_file>
 ```
 

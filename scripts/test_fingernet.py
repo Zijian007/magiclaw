@@ -2,12 +2,17 @@
 
 """
 FingerNet connection test
+=================
 
 This script is to test the FingerNet model.
 It initializes the FingerNet based on the provided parameter file.
 It tests whether the model can be loaded and run successfully.
 
-Example usage:
+Usage:
+-----------------
+
+To run the script, use the following command:
+
 ```bash
 python test_fingernet.py --params_path <params_path>
 ```

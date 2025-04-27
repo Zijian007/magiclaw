@@ -1,9 +1,21 @@
 # !/usr/bin/env python3
 
 """
-Claw Calibration Script
+Claw Calibration
+=================
 
 This script is to calibrate the angle range of the claw.
+
+Usage:
+-----------------
+
+To run the script, use the following command:
+
+```
+python calibrate_claw.py --id <claw_id>
+```
+
+where `<claw_id>` is the ID of the claw to calibrate (default: 0).
 
 First, the claw closes to the limit and the maximum angle is recorded.
 Then, the claw opens to the limit and the minimum angle is recorded.

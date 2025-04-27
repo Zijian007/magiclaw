@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+"""
+Run MagiClaw
+============
+
+This script is to run the MagiClaw system.
+"""
+
 import argparse
 from magiclaw import MagiClaw
 

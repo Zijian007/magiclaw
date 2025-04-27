@@ -2,14 +2,18 @@
 
 """
 Camera connection test
+=================
 
 This script is to test the camera connection.
 It initializes the camera based on the provided parameter file.
 It can run in headless mode (no GUI) and save images, or display them in a window.
 
-Example usage:
+Usage:
+-----------------
 
-```bash
+To run the script, use the following command:
+
+```
 python test_camera.py --params_path <params_path> --headless --save_images
 ```
 

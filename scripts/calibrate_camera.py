@@ -1,21 +1,25 @@
 # !/usr/bin/env python3
 
 """
-Camera Calibration Script
+Camera Calibration
+=================
 
 This script captures images from a camera (USB or Web) and saves them for calibration.
 
-Example for USB camera:
+Usage:
+-----------------
 
-```bash
+For USB camera, use the following command:
+
+```
 python calibrate_camera.py --mode usb --id 0 --width 320 --height 240
 ```
 
 where `--id` is the camera ID which is usually 0 for the first camera, and can also be found in `ls /dev/video*`.
 
-Example for Web camera:
+For Web camera, use the following command:
 
-```bash
+```
 python calibrate_camera.py --mode web --addr xx.xx.xx.xx:xxxx --width 320 --height 240
 ```
 
