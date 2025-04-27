@@ -13,4 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+MagiClaw
+=========
+
+MagiClaw is a Python package for controlling the MagiClaw, an intelligent data collection system.
+It provides a set of classes and functions to initialize and run all components.
+"""
+
 from magiclaw.__version__ import __version__

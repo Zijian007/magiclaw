@@ -10,9 +10,11 @@ It can run in headless mode (no GUI) and save images, or display them in a windo
 Example usage:
 
 ```bash
-python test_camera.py --params_path camera/config/file/path.yaml --headless --save_images
+python test_camera.py --params_path <params_path> --headless --save_images
 ```
 
+where <params_path> is the path to the camera parameters file, `--headless` runs the script 
+in headless mode (no GUI), and `--save_images` saves the camera frames as images.
 """
 
 import argparse
@@ -29,7 +31,14 @@ from magiclaw.devices.camera import UsbCamera, WebCamera
 
 
 def camera_test(params_path: str, headless: bool = False, save_images: bool = False):
-    """Test the camera."""
+    """
+    Test the camera.
+    
+    Args:
+        params_path (str): The path of the camera parameters.
+        headless (bool): Run in headless mode (no GUI).
+        save_images (bool): Save camera frames as images.
+    """
 
     # Initialize camera
     with open(params_path, "r") as f:
@@ -38,8 +47,8 @@ def camera_test(params_path: str, headless: bool = False, save_images: bool = Fa
     # Load detector parameters
     with open(f"./config/detector.yaml", "r") as f:
         detector_params = yaml.load(f, Loader=yaml.Loader)
-
     camera_name = os.path.basename(params_path).split(".")[0]
+    
     # Initialize camera based on the mode
     if camera_params["mode"] == "usb":
         camera = UsbCamera(
@@ -136,6 +145,7 @@ def camera_test(params_path: str, headless: bool = False, save_images: bool = Fa
         camera.release()
         print("Camera released.")
 
+    print("Camera test completed.")
 
 if __name__ == "__main__":
     # Parse command line arguments
@@ -156,20 +166,6 @@ if __name__ == "__main__":
         help="Save camera frames as images",
     )
     args = parser.parse_args()
-    
-    # Check if the parameters file exists
-    if args.params_path is None:
-        print("Please provide the path to the camera parameters file.")
-        exit(1)
-    if not os.path.exists(args.params_path):
-        print(f"Camera parameters file not found: {args.params_path}")
-        exit(1)
-    if not os.path.isfile(args.params_path):
-        print(f"Camera parameters path is not a file: {args.params_path}")
-        exit(1)
-    if not os.path.splitext(args.params_path)[1] == ".yaml":
-        print(f"Camera parameters file is not a YAML file: {args.params_path}")
-        exit(1)
     
     # Test camera
     camera_test(args.params_path, args.headless, args.save_images)

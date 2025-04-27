@@ -1,3 +1,5 @@
+# !/usr/bin/env python3
+
 from .camera import CameraSubscriber
 from .claw import ClawPublisher, ClawSubscriber
 from .finger import FingerPublisher, FingerSubscriber

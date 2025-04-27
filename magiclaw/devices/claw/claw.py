@@ -1,15 +1,72 @@
 #!/usr/bin/env python
 
+"""
+Claw
+====
+
+The claw is one of the main components of the MagiClaw.
+It is used to grasp and manipulate objects in various tasks.
+
+Usage
+-----
+
+This module provides a class to control the claw. To initialize the claw, you can use the following code:
+
+```
+from magiclaw.devices.claw import Claw
+
+claw = Claw(
+    claw_id=<claw_id>,
+    lead=<lead>,
+    gear_radius=<gear_radius>,
+    **motor_params
+)
+```
+
+where `<claw_id>` is the ID of the claw, `<lead>` is the lead of the screw, `<gear_radius>` is the radius of the gear,
+and `motor_params` are the parameters of the motor.
+
+The claw class provides methods to control the claw, including opening and closing the claw, position control,
+torque control, spring damping control, bilateral control, and bilateral spring damping control.
+
+Usually, when the claw is used standalone, it can be controlled by the `spring_damping_control` method:
+
+```
+claw.spring_damping_control(target_angle=0.0)
+```
+
+It will work like a spring damper, automatically balancing at the target angle when there is no external force.
+
+When the claw is used in teleoperation, it can be controlled by the `bilateral_spring_damping_control` method:
+
+```
+claw.bilateral_spring_damping_control(
+    bilateral_motor_angle_percent=0.5,
+    bilateral_motor_speed=0.0,
+    target_angle=0.0
+)
+```
+
+where `bilateral_motor_angle_percent` is the percentage of the motor angle, `bilateral_motor_speed` is the speed of 
+the motor, and `target_angle` is the target angle of the claw. The `mode` parameter can be set to "leader" or "follower".
+It will keep two claws in the same angle and speed, given force feedback for users.
+"""
+
 import argparse
 import sys
 import time
 import yaml
 import numpy as np
-import copy
 from pylkmotor import LKMotor
 
 
 class Claw:
+    """
+    Claw class.
+
+    This class is used to control the claw.
+    """
+
     def __init__(
         self,
         claw_id: int,
@@ -20,7 +77,7 @@ class Claw:
         Kp_s: float,
         Kd: float,
         iq_max: float,
-        angle_range: int,
+        angle_range: float,
         lead: float,
         gear_radius: float,
         motor_angle_deadband: int = 10,
@@ -30,12 +87,19 @@ class Claw:
         """Claw initialization.
 
         Args:
-            bus_interface: The bus interface.
-            bus_channel: The bus channel.
-            motor_id: The motor ID.
-            Kp: The proportional gain of the PID controller.
-            Kd: The derivative gain of the PID controller.
-            iq_max: The maximum current.
+            claw_id (int): The ID of the claw.
+            bus_interface (str): The bus interface.
+            bus_channel (str): The bus channel.
+            motor_id (int): The motor ID.
+            Kp (float): The proportional gain of the PID controller.
+            Kd (float): The derivative gain of the PID controller.
+            iq_max (float): The maximum current.
+            angle_range (float): The motor angle range in degrees.
+            lead (float): The lead of the screw.
+            gear_radius (float): The radius of the gear.
+            motor_angle_deadband (int): The deadband of the motor angle in 0.01 degrees.
+            motor_speed_deadband (int): The deadband of the motor speed in dps.
+            mode (str): The mode of the claw, which can be "leader" or "follower".
         """
 
         # Set the parameters
@@ -86,7 +150,7 @@ class Claw:
         print("Claw Init.")
         print("Motor Angle Offset: ", self.motor_angle_offset)
         print("Motor Angle Range: ", self.motor_angle_range)
-        
+
         # Read motor status
         self.read_motor_status()
 
@@ -98,12 +162,12 @@ class Claw:
         print("{:-^80}".format(""))
 
     def init(self) -> None:
-        """Reset the motor to the initial position.
+        """
+        Reset the motor to the initial position.
 
         The motor counterclockwise rotates to the minimum
         angle which is recorded as the minimum of the angle.
         The offset is calculated to make the minimum angle to be 0.
-
         """
 
         # Set the motor to the minimum angle (open)
@@ -117,27 +181,36 @@ class Claw:
         )
 
     def open(self) -> None:
-        """Open the motor."""
+        """
+        Open the motor.
+        """
 
         self.motor.torque_loop_control(-100)
 
     def close(self) -> None:
-        """Close the motor."""
+        """
+        Close the motor.
+        """
 
         self.motor.torque_loop_control(100)
 
     def stop(self) -> None:
-        """Stop the motor."""
+        """
+        Stop the motor.
+        """
 
         self.motor.motor_stop()
 
     def release(self) -> None:
-        """Release the motor."""
+        """
+        Release the motor.
+        """
 
         self.motor.bus.shutdown()
 
     def _motor_angle_to_claw_angle(self, angle: float) -> float:
-        """Convert the motor angle to the claw angle.
+        """
+        Convert the motor angle to the claw angle.
 
         Args:
             angle: The motor angle in degrees.
@@ -153,7 +226,8 @@ class Claw:
         return claw_angle
 
     def _claw_angle_to_motor_angle(self, angle: float) -> float:
-        """Convert the claw angle to the motor angle.
+        """
+        Convert the claw angle to the motor angle.
 
         Args:
             angle: The claw angle in degrees.
@@ -168,8 +242,9 @@ class Claw:
         motor_angle = self.motor_angle_range - lead_distance / self.lead * 360.0
         return motor_angle
 
-    def read_motor_status(self):
-        """Get the motor status.
+    def read_motor_status(self) -> None:
+        """
+        Get the motor status.
 
         Returns:
             motor_angle: The motor angle in 0.01 degrees.
@@ -197,7 +272,10 @@ class Claw:
             sys.exit()
 
     def position_control(self, angle: float, speed: int = 1000) -> None:
-        """Position control.
+        """
+        Position control.
+        
+        This function sets the target position and speed of the motor.
 
         Args:
             angle: The target claw angle in degrees.
@@ -213,6 +291,8 @@ class Claw:
 
     def torque_control(self, iq: float) -> None:
         """Torque control.
+        
+        This function sets the target current of the motor.
 
         Args:
             iq: The target iq in A.
@@ -222,7 +302,8 @@ class Claw:
         self.motor.torque_loop_control(int(iq * 2048 / 16.5))
 
     def spring_damping_control(self, target_angle: float = 0.0) -> None:
-        """Spring damping control.
+        """
+        Spring damping control.
 
         This method is used to control the motor to automatically
         balance at the target angle when there is external force.
@@ -254,7 +335,8 @@ class Claw:
     def bilateral_control(
         self, bilateral_angle: float = 0.0, bilateral_speed: float = 0.0
     ) -> None:
-        """Bilateral control.
+        """
+        Bilateral control.
 
         This method is used to control the two motors keeping
         the same angle and speed. The target current is calculated
@@ -296,7 +378,8 @@ class Claw:
         bilateral_motor_speed,
         target_angle: float = 0.0,
     ) -> None:
-        """Bilateral spring damping control.
+        """
+        Bilateral spring damping control.
 
         This method is used to control the two motors keeping
         the same angle and speed, and also automatically balance
@@ -320,7 +403,9 @@ class Claw:
             bilateral_speed_error = 0
         else:
             # Convert the bilateral angle percent to the motor angle
-            bilateral_motor_angle = self.motor_angle_range * bilateral_motor_angle_percent
+            bilateral_motor_angle = (
+                self.motor_angle_range * bilateral_motor_angle_percent
+            )
             # Calculate the error
             bilateral_angle_error = (self.motor_angle - bilateral_motor_angle) * 100.0
             bilateral_speed_error = self.motor_speed - bilateral_motor_speed
@@ -338,7 +423,7 @@ class Claw:
 
         # Calculate the target current
         iq = (
-            - self.Kp_b * bilateral_angle_error
+            -self.Kp_b * bilateral_angle_error
             - self.Kd * bilateral_speed_error
             - self.Kp_s * target_angle_error
         )
@@ -354,11 +439,6 @@ if __name__ == "__main__":
     # Parse the arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--claw_id", type=int, default=0, help="The ID of the claw.")
-    parser.add_argument(
-        "--spring_damping_control",
-        action="store_true",
-        help="Demo spring damping control to balance the motor.",
-    )
     args = parser.parse_args()
 
     # Load the claw parameters
@@ -372,19 +452,6 @@ if __name__ == "__main__":
         gear_radius=claw_params["gear_radius"],
         **claw_params["motor"],
     )
-
-    # Demo spring damping control
-    if args.spring_damping_control:
-        print("Spring damping control ...")
-        try:
-            while True:
-                claw.spring_damping_control()
-                time.sleep(0.01)
-                print(
-                    f"Angle: {claw.motor_angle} deg, Speed: {claw.motor_speed} dps, IQ: {claw.motor_iq} A"
-                )
-        except KeyboardInterrupt:
-            print("\nClaw Stopped.")
 
     # Release the motor
     claw.stop()

@@ -4,9 +4,11 @@
 Claw Calibration Script
 
 This script is to calibrate the angle range of the claw.
+
 First, the claw closes to the limit and the maximum angle is recorded.
 Then, the claw opens to the limit and the minimum angle is recorded.
 Therefore, the angle range is calculated, which will be updated to the yaml file in `configs/claw/`.
+
 During deployment, the claw converts the minmimum angle as 0, and the maximum angle as `angle_range`.
 """
 
