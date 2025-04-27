@@ -49,7 +49,6 @@ def teleoperation_processes(
                 addrs["claw"],
                 bilateral_addr,
                 claw_params,
-                loop_rate,
             ),
             name="claw_process",
         )
