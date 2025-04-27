@@ -21,4 +21,5 @@ MagiClaw is a Python package for controlling the MagiClaw, an intelligent data c
 It provides a set of classes and functions to initialize and run all components.
 """
 
+from magiclaw.magiclaw import MagiClaw
 from magiclaw.__version__ import __version__

@@ -47,7 +47,7 @@ claw.bilateral_spring_damping_control(
 )
 ```
 
-where `bilateral_motor_angle_percent` is the percentage of the motor angle, `bilateral_motor_speed` is the speed of 
+where `bilateral_motor_angle_percent` is the percentage of the motor angle, `bilateral_motor_speed` is the speed of
 the motor, and `target_angle` is the target angle of the claw. The `mode` parameter can be set to "leader" or "follower".
 It will keep two claws in the same angle and speed, given force feedback for users.
 """
@@ -100,10 +100,22 @@ class Claw:
             motor_angle_deadband (int): The deadband of the motor angle in 0.01 degrees.
             motor_speed_deadband (int): The deadband of the motor speed in dps.
             mode (str): The mode of the claw, which can be "leader" or "follower".
+        Raises:
+            ValueError: If the bus interface is not valid or the motor ID is not valid.
         """
 
-        # Set the parameters
+        # Set claw parameters
         self.claw_id = claw_id
+        self.lead = lead
+        self.gear_radius = gear_radius
+        if mode not in ["leader", "follower"]:
+            raise ValueError(
+                f"Invalid mode: {mode}. The mode should be 'leader' or 'follower'."
+            )
+        self.mode = mode
+        self.claw_angle = 0
+
+        # Set motor parameters
         self.bus_interface = bus_interface
         self.bus_channel = bus_channel
         self.motor_id = motor_id
@@ -111,16 +123,23 @@ class Claw:
         self.Kp_s = Kp_s
         self.Kd = Kd
         self.iq_max = iq_max
-        self.lead = lead
-        self.gear_radius = gear_radius
+        self.motor_angle_offset = 0
+        self.motor_angle = 0
+        self.motor_angle_range = angle_range
+        self.motor_angle_percent = 0
+        self.motor_speed = 0
+        self.motor_iq = 0
+        self.motor_temperature = 0
+        self.motor_angle_deadband = motor_angle_deadband
+        self.motor_speed_deadband = motor_speed_deadband
 
         # Create a LKMotor object
         try:
             self.motor = LKMotor(self.bus_interface, self.bus_channel, self.motor_id)
         except Exception as e:
-            print("\033[31mFailed to connect to the motor!\033[0m")
-            print("\033[31mPlease check the connection!\033[0m")
-            sys.exit()
+            raise ValueError(
+                f"Failed to create a motor object: {e}. Please check the connection."
+            )
 
         # Print the initialization message
         print("{:-^80}".format(f" Claw {self.claw_id} Initialization "))
@@ -132,19 +151,6 @@ class Claw:
         print(f"Kd: {self.Kd}")
         print(f"Max IQ: {self.iq_max} A")
 
-        # Set parameters
-        self.motor_angle_offset = 0
-        self.motor_angle = 0
-        self.motor_angle_range = angle_range
-        self.motor_angle_percent = 0
-        self.motor_speed = 0
-        self.motor_iq = 0
-        self.motor_temperature = 0
-        self.claw_angle = 0
-        self.motor_angle_deadband = motor_angle_deadband
-        self.motor_speed_deadband = motor_speed_deadband
-        self.mode = mode
-
         # Set motor to the initial position
         self.init()
         print("Claw Init.")
@@ -153,7 +159,6 @@ class Claw:
 
         # Read motor status
         self.read_motor_status()
-
         print(
             f"Motor Angle: {self.motor_angle} deg\nMotor Speed: {self.motor_speed} dps\nMotor IQ: {self.motor_iq} A"
         )
@@ -213,10 +218,10 @@ class Claw:
         Convert the motor angle to the claw angle.
 
         Args:
-            angle: The motor angle in degrees.
+            angle (float): The motor angle in degrees.
 
         Returns:
-            claw_angle: The claw angle in degrees.
+            claw_angle (float): The claw angle in degrees.
         """
 
         # Convert the motor angle to the lead distance
@@ -230,10 +235,10 @@ class Claw:
         Convert the claw angle to the motor angle.
 
         Args:
-            angle: The claw angle in degrees.
+            angle (float): The claw angle in degrees.
 
         Returns:
-            motor_angle: The motor angle in degrees.
+            motor_angle (float): The motor angle in degrees.
         """
 
         # Convert the claw angle to the lead distance
@@ -246,10 +251,10 @@ class Claw:
         """
         Get the motor status.
 
-        Returns:
-            motor_angle: The motor angle in 0.01 degrees.
-            motor_speed: The motor speed in dps.
-            motor_iq: The motor iq in A.
+        This function reads and updtes the motor angle, temperature, iq, and speed.
+
+        Raises:
+            ValueError: If the motor status cannot be read.
         """
 
         try:
@@ -266,20 +271,18 @@ class Claw:
             self.motor_temperature = motor_temperature
             self.motor_speed = motor_speed
             self.motor_iq = motor_iq / 2048 * 16.5
-        except TypeError:
-            print("\033[31mFailed to read motor status!\033[0m")
-            print("\033[31mPlease check the connection!\033[0m")
-            sys.exit()
+        except Exception as e:
+            raise ValueError(f"Failed to read the motor status: {e}")
 
     def position_control(self, angle: float, speed: int = 1000) -> None:
         """
         Position control.
-        
+
         This function sets the target position and speed of the motor.
 
         Args:
-            angle: The target claw angle in degrees.
-            speed: The speed of the motor in dps.
+            angle (float): The target claw angle in degrees.
+            speed (int): The speed of the motor in dps.
         """
 
         # Convert the claw angle to the motor angle
@@ -291,11 +294,11 @@ class Claw:
 
     def torque_control(self, iq: float) -> None:
         """Torque control.
-        
+
         This function sets the target current of the motor.
 
         Args:
-            iq: The target iq in A.
+            iq (float): The target iq in A.
         """
 
         # Set the target current
@@ -313,8 +316,7 @@ class Claw:
         and then limited by the maximum current.
 
         Args:
-            angle: The target motor angle in degrees.
-            speed: The speed of the motor in dps.
+            target_angle (float): The target motor angle in degrees.
         """
 
         # Read the motor status
@@ -345,9 +347,8 @@ class Claw:
         and then limited by the maximum current.
 
         Args:
-            bilateral_angle: The target bilateral angle in degrees.
-            bilateral_speed: The target bilateral speed in dps.
-            motor_angle: The target motor angle in degrees.
+            bilateral_angle (float): The bilateral angle in degrees.
+            bilateral_speed (float): The bilateral speed in dps.
         """
 
         # Read the motor status
@@ -389,9 +390,9 @@ class Claw:
         and then limited by the maximum current.
 
         Args:
-            bilateral_angle: The target bilateral angle in degrees.
-            bilateral_speed: The target bilateral speed in dps.
-            target_angle: The target motor angle in degrees.
+            bilateral_angle (float): The bilateral angle in degrees.
+            bilateral_speed (float): The bilateral speed in dps.
+            target_angle (float): The target motor angle in degrees.
         """
 
         # Read the motor status

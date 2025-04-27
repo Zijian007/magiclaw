@@ -40,7 +40,7 @@ For more information, please refer to https://github.com/asMagiClaw/metafinger
 import argparse
 from typing import Tuple
 import numpy as np
-from magiclaw.utils.nn_utils import init_onnx_model
+from magiclaw.utils.nn_utils import init_model
 
 
 class FingerNet:
@@ -64,9 +64,11 @@ class FingerNet:
         FingerNet initialization.
 
         Args:
-            name: The name of the model.
-            model_path: The path of the model.
-            device: The device to run the model on. Default is "auto".
+            name (str): The name of the model.
+            model_path (str): The path of the model.
+            device (str): The device to run the model on, selecting "auto" (default), "cpu", "cuda", and "hailo".
+        Raises:
+            ValueError: If the model path is not valid or the model cannot be loaded.
         """
 
         # Set the name and model path
@@ -75,7 +77,7 @@ class FingerNet:
 
         # Create a ONNX runtime model
         try:
-            self.model = init_onnx_model(self.model_path, device)
+            self.model = init_model(self.model_path, device)
         except Exception as e:
             raise ValueError(f"Failed to load the model: {e}")
 

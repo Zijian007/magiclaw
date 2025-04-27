@@ -8,12 +8,13 @@ import os
 import onnxruntime as ort
 
 
-def init_onnx_model(model_path: str, device: str) -> ort.InferenceSession:
+def init_model(model_path: str, device: str = "auto") -> ort.InferenceSession:
     """
-    Load an ONNX model.
+    Initialize an ONNX model.
 
     Args:
         model_path (str): The path to the ONNX model file.
+        device (str): The device to be used for inference. Options are "auto", "cuda", "hailo", or "cpu".
 
     Returns:
         ort.InferenceSession: The loaded ONNX model.
@@ -35,7 +36,9 @@ def get_provider(devices: str = "auto") -> str:
     If none of these providers are available, it defaults to CPUExecutionProvider.
 
     Returns:
-        str: The provider to be used for ONNX model inference.
+        provider (str): The provider to be used for ONNX model inference.
+    Raises:
+        ValueError: If the specified device is not supported or available.
     """
     
     available_providers = ort.get_available_providers()
