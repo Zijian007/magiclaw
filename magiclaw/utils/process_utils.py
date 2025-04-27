@@ -70,9 +70,10 @@ def standalone_claw_process(
             claw.spring_damping_control(target_angle=0.0)
 
             # limit speed, temperature to stop motor
-            if abs(claw.motor_speed) > 7200 or claw.motor_temperature > 80:
-                print("Motor stopped due to limit exceeded.")
-                raise ValueError("Motor stopped due to limit exceeded.")
+            if abs(claw.motor_speed) > 10000:
+                raise ValueError("Motor stopped due to speed limit exceeded.")
+            if claw.motor_temperature > 80:
+                raise ValueError("Motor stopped due to temperature limit exceeded.")
 
             # Publish the data
             claw_publisher.publishMessage(
@@ -183,9 +184,10 @@ def bilateral_claw_process(
             )
 
             # limit speed, temperature to stop motor
-            if abs(claw.motor_speed) > 7200 or claw.motor_temperature > 80:
-                print("Motor stopped due to limit exceeded.")
-                raise ValueError("Motor stopped due to limit exceeded.")
+            if abs(claw.motor_speed) > 10000:
+                raise ValueError("Motor stopped due to speed limit exceeded.")
+            if claw.motor_temperature > 80:
+                raise ValueError("Motor stopped due to temperature limit exceeded.")
 
             # Publish the data
             claw_publisher.publishMessage(

@@ -375,8 +375,8 @@ class Claw:
 
     def bilateral_spring_damping_control(
         self,
-        bilateral_motor_angle_percent,
-        bilateral_motor_speed,
+        bilateral_motor_angle_percent: float,
+        bilateral_motor_speed: float,
         target_angle: float = 0.0,
     ) -> None:
         """
