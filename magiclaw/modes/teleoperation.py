@@ -61,6 +61,7 @@ def teleoperation_processes(
             target=finger_process,
             args=(
                 logger,
+                0,
                 addrs["finger_0"],
                 claw_params["camera_0"]["params_path"],
                 claw_params["finger_net_0"],
@@ -76,6 +77,7 @@ def teleoperation_processes(
             target=finger_process,
             args=(
                 logger,
+                1,
                 addrs["finger_1"],
                 claw_params["camera_1"]["params_path"],
                 claw_params["finger_net_1"],
