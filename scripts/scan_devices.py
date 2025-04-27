@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Network Device Scanner
+Scan Devices
 =====================
 
 This script is to detect all devices on the local network and print their information

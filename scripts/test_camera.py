@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Camera connection test
+Test Camera
 =================
 
 This script is to test the camera connection.

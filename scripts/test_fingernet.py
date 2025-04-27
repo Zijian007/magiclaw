@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-FingerNet connection test
+Test FingerNet
 =================
 
 This script is to test the FingerNet model.

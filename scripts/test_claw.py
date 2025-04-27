@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Claw connection test
+Test Claw
 =================
 
 This script is to test the claw connection.
