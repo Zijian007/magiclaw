@@ -26,7 +26,7 @@ from magiclaw.utils.logging_utils import check_system_resources
 
 
 def standalone_claw_process(
-    logger: Logger, claw_addr: dict, claw_params: dict, loop_rate: int = 200
+    logger: Logger, claw_addr: dict, claw_params: dict
 ) -> None:
     """
     Standalone claw process.
@@ -61,6 +61,7 @@ def standalone_claw_process(
     loop_start = time.time()
     elapsed_time = 0.0
     remaining_time = 0.0
+    loop_rate = 200
 
     # Start the control loop
     try:
@@ -114,7 +115,6 @@ def bilateral_claw_process(
     claw_addr: dict,
     bilateral_addr: dict,
     claw_params: dict,
-    loop_rate: int = 200,
 ) -> None:
     """
     Bilateral claw process.
@@ -155,6 +155,7 @@ def bilateral_claw_process(
     elapsed_time = 0.0
     remaining_time = 0.0
     log_count = 0
+    loop_rate = 200
 
     # Start the control loop
     try:

@@ -86,3 +86,5 @@ def standalone_processes(
             ),
         )
     )
+
+    return processes
