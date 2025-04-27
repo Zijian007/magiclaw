@@ -474,7 +474,7 @@ if __name__ == "__main__":
     with open(args.params_path, "r") as f:
         camera_params = yaml.load(f.read(), Loader=yaml.Loader)
 
-    with open("./config/detector.yaml", "r") as f:
+    with open("./configs/detector.yaml", "r") as f:
         detector_params = yaml.load(f.read(), Loader=yaml.Loader)
 
     try:

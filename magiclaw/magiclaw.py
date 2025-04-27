@@ -8,7 +8,7 @@ MagiClaw is a Python package for controlling the MagiClaw, an intelligent data c
 The MagiClaw consists of a claw, two fingers, and a phone.
 It provides a set of classes and functions to initialize and run all components.
 
-Before running this module, make sure to set up all necessary configurations in `./config/`.
+Before running this module, make sure to set up all necessary configurations in `./configs/`.
 
 Usage
 -----------------
@@ -60,7 +60,7 @@ class MagiClaw:
 
         # Load the claw parameters
         try:
-            with open(f"./config/claw/claw_{self.id}.yaml", "r") as f:
+            with open(f"./configs/claw/claw_{self.id}.yaml", "r") as f:
                 self.claw_params = yaml.safe_load(f)
         except FileNotFoundError as e:
             self.logger.error(f"Failed to load configuration file: {e}")
@@ -68,7 +68,7 @@ class MagiClaw:
 
         # Load the bilateral parameters
         try:
-            with open(f"./config/bilateral.yaml", "r") as f:
+            with open(f"./configs/bilateral.yaml", "r") as f:
                 self.bilateral_params = yaml.load(f, Loader=yaml.Loader)
         except FileNotFoundError as e:
             self.logger.error(f"Failed to load configuration file: {e}")

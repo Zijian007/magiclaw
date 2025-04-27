@@ -443,7 +443,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Load the claw parameters
-    with open(f"./config/claw/claw_{args.claw_id}.yaml", "r") as f:
+    with open(f"./configs/claw/claw_{args.claw_id}.yaml", "r") as f:
         claw_params = yaml.load(f, Loader=yaml.Loader)
 
     # Create a Claw object

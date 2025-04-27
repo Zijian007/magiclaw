@@ -250,7 +250,7 @@ def finger_process(
         camera_params = yaml.load(f.read(), Loader=yaml.Loader)
 
     # Load detector parameters
-    with open(f"./config/detector.yaml", "r") as f:
+    with open(f"./configs/detector.yaml", "r") as f:
         detector_params = yaml.load(f, Loader=yaml.Loader)
 
     # Initialize camera based on the mode
