@@ -22,7 +22,7 @@ parser.add_argument(
     "--mode",
     type=str,
     choices=["teleoperation", "standalone"],
-    default="standalone",
+    default="teleoperation",
     help="Mode to run MagiClaw in.",
 )
 parser.add_argument(
