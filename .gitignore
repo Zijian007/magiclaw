@@ -178,3 +178,6 @@ log/
 
 # config
 configs/
+
+# protobuf python
+*.pb2.py
