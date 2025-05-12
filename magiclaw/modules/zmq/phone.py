@@ -121,7 +121,7 @@ class PhoneSubscriber:
         print("Phone Subscriber Initialization Done.")
         print("{:-^80}".format(""))
 
-    def subscribeMessage(self, timeout: int = 100) -> Tuple[bytes, np.ndarray, np.ndarray, np.ndarray]:
+    def subscribeMessage(self, timeout: int = 1000) -> Tuple[bytes, np.ndarray, np.ndarray]:
         """Subscribe the message.
 
         Args:
@@ -139,7 +139,11 @@ class PhoneSubscriber:
         # Receive the message
         socks = dict(self.poller.poll(timeout))
         if self.subscriber in socks and socks[self.subscriber] == zmq.POLLIN:
-            self.phone.ParseFromString(self.subscriber.recv())
+            msg = self.subscriber.recv()
+            print("Message received.")
+            print(msg)
+            # Parse the message
+            self.phone.ParseFromString(msg)
         else:
             raise zmq.ZMQError("No message received within the timeout period.")
         return (
