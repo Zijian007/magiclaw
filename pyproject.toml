@@ -45,7 +45,7 @@ dependencies = [
 ]
 
 [project.scripts]
-magiclaw-run = "magiclaw.cli:run_main"
+run-magiclaw = "magiclaw.cli:run_main"
 
 [project.urls]
 homepage = "https://github.com/han-xudong/magiclaw"
