@@ -82,7 +82,7 @@ class Claw:
         gear_radius: float,
         motor_angle_deadband: int = 10,
         motor_speed_deadband: int = 10,
-        mode: str = None,
+        mode: str = "standalone",
     ) -> None:
         """Claw initialization.
 
@@ -99,7 +99,7 @@ class Claw:
             gear_radius (float): The radius of the gear.
             motor_angle_deadband (int): The deadband of the motor angle in 0.01 degrees.
             motor_speed_deadband (int): The deadband of the motor speed in dps.
-            mode (str): The mode of the claw, which can be "leader" or "follower".
+            mode (str): The mode of the claw, which can be "leader", "follower", or "standalone".
         Raises:
             ValueError: If the bus interface is not valid or the motor ID is not valid.
         """
@@ -108,9 +108,9 @@ class Claw:
         self.claw_id = claw_id
         self.lead = lead
         self.gear_radius = gear_radius
-        if mode not in ["leader", "follower"]:
+        if mode not in ["leader", "follower", "standalone"]:
             raise ValueError(
-                f"Invalid mode: {mode}. The mode should be 'leader' or 'follower'."
+                f"Invalid mode: {mode}. The mode should be \"leader\", \"follower\", or \"standalone\"."
             )
         self.mode = mode
         self.claw_angle = 0

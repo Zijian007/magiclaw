@@ -59,7 +59,6 @@ class MagiClaw:
             raise ValueError(
                 "\033[31mInvalid mode! Must be 'teleop' or 'standalone'.\033[0m"
             )
-        self.logger.info(f"MagiClaw {self.id} initialized with {self.mode} mode")
 
         # Initialize the logger
         log_file_path = f"log/{time.strftime('%Y-%m-%d_%H-%M-%S')}.txt"
@@ -85,6 +84,8 @@ class MagiClaw:
             
         # Multi-processing
         self.processes = []
+        
+        self.logger.info(f"MagiClaw {self.id} initializing with {self.mode} mode")
 
     def run(self, loop_rate: int = 30) -> None:
         """
