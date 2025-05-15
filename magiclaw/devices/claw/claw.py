@@ -19,6 +19,7 @@ claw = Claw(
     claw_id=<claw_id>,
     lead=<lead>,
     gear_radius=<gear_radius>,
+    mode=<"leader" | "follower" | "standalone">,
     **motor_params
 )
 ```
