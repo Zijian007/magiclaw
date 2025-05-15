@@ -115,6 +115,7 @@ def bilateral_claw_process(
     claw_addr: dict,
     bilateral_addr: dict,
     claw_params: dict,
+    mode: str,
 ) -> None:
     """
     Bilateral claw process.
@@ -135,6 +136,7 @@ def bilateral_claw_process(
         claw_id=claw_params["id"],
         lead=claw_params["lead"],
         gear_radius=claw_params["gear_radius"],
+        mode=mode,
         **claw_params["motor"],
     )
 

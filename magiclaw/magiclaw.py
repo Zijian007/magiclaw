@@ -22,7 +22,7 @@ magiclaw = MagiClaw(id=<id>, mode=<mode>)
 magiclaw.run(loop_rate=<loop_rate>)
 ```
 
-where `<id> (default: 0)` is the ID of the claw, <mode> (default: "teleoperation") is the mode to run MagiClaw in,
+where `<id> (default: 0)` is the ID of the claw, <mode> (default: "teleop") is the mode to run MagiClaw in,
 and <loop_rate> (default: 30) is the loop rate in Hz.
 """
 
@@ -34,13 +34,13 @@ from magiclaw.utils.logging_utils import init_logger
 
 
 class MagiClaw:
-    def __init__(self, id: int = 0, mode: str = "teleoperation") -> None:
+    def __init__(self, id: int = 0, mode: str = "standalone") -> None:
         """
         MagiClaw initialization.
 
         Args:
             id (int): The ID of the claw.
-            mode (str): The mode to run MagiClaw in. (default: "teleoperation")
+            mode (str): The mode to run MagiClaw in. (default: "standalone")
         Raises:
             ValueError: If the claw ID is invalid or not provided.
         """
@@ -52,6 +52,14 @@ class MagiClaw:
             raise ValueError("\033[31mID must be provided!\033[0m")
         # Set the claw ID
         self.id = id
+        
+        # Set the mode
+        self.mode = mode
+        if self.mode not in ["teleop", "standalone"]:
+            raise ValueError(
+                "\033[31mInvalid mode! Must be 'teleop' or 'standalone'.\033[0m"
+            )
+        self.logger.info(f"MagiClaw {self.id} initialized with {self.mode} mode")
 
         # Initialize the logger
         log_file_path = f"log/{time.strftime('%Y-%m-%d_%H-%M-%S')}.txt"
@@ -65,27 +73,18 @@ class MagiClaw:
         except FileNotFoundError as e:
             self.logger.error(f"Failed to load configuration file: {e}")
             raise e
-
+        
         # Load the bilateral parameters
-        try:
-            with open(f"./configs/bilateral.yaml", "r") as f:
-                self.bilateral_params = yaml.load(f, Loader=yaml.Loader)
-        except FileNotFoundError as e:
-            self.logger.error(f"Failed to load configuration file: {e}")
-            raise e
-
-        # Store addresses
-        self.addrs = self.claw_params["addr"]
-        self.bilateral_addr = self.bilateral_params["addr"]
-
+        if self.mode == "teleop":
+            try:
+                with open(f"./configs/bilateral.yaml", "r") as f:
+                    self.bilateral_params = yaml.load(f, Loader=yaml.Loader)
+            except FileNotFoundError as e:
+                self.logger.error(f"Failed to load configuration file: {e}")
+                raise e
+            
         # Multi-processing
         self.processes = []
-        self.mode = mode
-        if self.mode not in ["teleoperation", "standalone"]:
-            raise ValueError(
-                "\033[31mInvalid mode! Must be 'teleoperation' or 'standalone'.\033[0m"
-            )
-        self.logger.info(f"MagiClaw {self.id} initialized with {self.mode} mode")
 
     def run(self, loop_rate: int = 30) -> None:
         """
@@ -99,18 +98,18 @@ class MagiClaw:
         """
 
         # Create processes
-        if self.mode == "teleoperation":
+        if self.mode == "teleop":
             self.processes = teleoperation_processes(
                 logger=self.logger,
-                addrs=self.addrs,
-                bilateral_addr=self.bilateral_addr,
+                addrs=self.claw_params["addr"],
+                bilateral_params=self.bilateral_params,
                 claw_params=self.claw_params,
                 loop_rate=loop_rate,
             )
-        elif self.mode == "standalone":
+        else:
             self.processes = standalone_processes(
                 logger=self.logger,
-                addrs=self.addrs,
+                addrs=self.claw_params["addr"],
                 claw_params=self.claw_params,
                 loop_rate=loop_rate,
             )
@@ -159,9 +158,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--mode",
         type=str,
-        choices=["teleoperation", "standalone"],
-        default="teleoperation",
-        help="Mode to run MagiClaw in, either 'teleoperation' or 'standalone'.",
+        choices=["teleop", "standalone"],
+        default="teleop",
+        help="Mode to run MagiClaw in, either 'teleop' or 'standalone'.",
     )
     parser.add_argument(
         "--loop_rate",

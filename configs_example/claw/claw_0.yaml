@@ -34,7 +34,6 @@ motor:
   bus_channel: can0
   bus_interface: socketcan
   iq_max: 10
-  mode: leader
   motor_id: 1
 phone:
   params_path: ./config/phone/phone_0.yaml

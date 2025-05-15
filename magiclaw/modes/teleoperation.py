@@ -22,9 +22,10 @@ from magiclaw.utils.process_utils import (
 def teleoperation_processes(
     logger,
     addrs: dict,
-    bilateral_addr: str,
+    bilateral_params: dict,
     claw_params: dict,
     loop_rate: int,
+    mode: str,
 ) -> list:
     """
     Generate processes for teleoperation mode.
@@ -32,9 +33,10 @@ def teleoperation_processes(
     Args:
         logger (logging.Logger): The logger object.
         addrs (dict): The addresses for the claw, fingers, and publisher.
-        bilateral_addr (str): The address for the bilateral claw.
+        bilateral_params (dict): The parameters for the bilateral claw process.
         claw_params (dict): The parameters for the claw process.
         loop_rate (int): The loop rate in Hz.
+        mode (str): The mode to run the claw in, "leader" or "follower".
     """
 
     # Create a list to store the processes
@@ -47,8 +49,9 @@ def teleoperation_processes(
             args=(
                 logger,
                 addrs["claw"],
-                bilateral_addr,
+                bilateral_params["addr"],
                 claw_params,
+                bilateral_params["mode"],
             ),
             name="claw_process",
         )
