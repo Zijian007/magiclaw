@@ -30,7 +30,8 @@ message Phone
     repeated int32 depth_img = 2;
     int32 depth_width = 3;
     int32 depth_height = 4;
-    repeated float pose = 5;
+    repeated float local_pose = 5;
+    repeated float global_pose = 6;
 }
 
 message MagiClaw

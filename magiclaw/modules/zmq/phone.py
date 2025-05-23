@@ -50,7 +50,8 @@ class PhonePublisher:
         depth_img: np.ndarray = np.array([]),
         depth_width: int = 0,
         depth_height: int = 0,
-        pose: np.ndarray = np.array([]),
+        local_pose: np.ndarray = np.array([]),
+        global_pose: np.ndarray = np.array([]),
     ) -> None:
         """Publish the message.
 
@@ -66,7 +67,8 @@ class PhonePublisher:
         self.phone.depth_img = depth_img.flatten().tolist()
         self.phone.depth_width = depth_width
         self.phone.depth_height = depth_height
-        self.phone.pose[:] = pose.flatten().tolist()
+        self.phone.local_pose[:] = local_pose.flatten().tolist()
+        self.phone.global_pose[:] = global_pose.flatten().tolist()
 
         # Publish the message
         self.publisher.send(self.phone.SerializeToString())
@@ -151,7 +153,8 @@ class PhoneSubscriber:
             np.array(self.phone.depth_img).reshape(
                 self.phone.depth_height, self.phone.depth_width
             ),
-            np.array(self.phone.pose),
+            np.array(self.phone.local_pose),
+            np.array(self.phone.global_pose),
         )
 
     def close(self):
