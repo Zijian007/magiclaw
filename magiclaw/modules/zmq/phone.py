@@ -64,7 +64,7 @@ class PhonePublisher:
         # Set the message
         self.phone.timestamp = datetime.now().timestamp()
         self.phone.color_img = color_img_bytes
-        self.phone.depth_img = depth_img.flatten().tolist()
+        self.phone.depth_img[:] = depth_img.flatten().tolist()
         self.phone.depth_width = depth_width
         self.phone.depth_height = depth_height
         self.phone.local_pose[:] = local_pose.flatten().tolist()
