@@ -9,7 +9,7 @@ from typing import Tuple
 from collections import deque
 from scipy.spatial.transform import Rotation as R
 from magiclaw.modules.zmq import CameraSubscriber
-from magiclaw.config import CameraConfig, DetectorConfig
+from magiclaw.configs import CameraConfig, DetectorConfig
 
 
 class WebCamera:

@@ -24,7 +24,7 @@ from magiclaw.modules.zmq import (
     ClawSubscriber,
     PhoneSubscriber,
 )
-from magiclaw.config import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig
+from magiclaw.configs import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig
 from magiclaw.utils.logging_utils import check_system_resources
 
 

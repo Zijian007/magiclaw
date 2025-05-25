@@ -29,7 +29,7 @@ and <loop_rate> (default: 30) is the loop rate in Hz.
 import argparse
 import time
 import yaml
-from .config import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig
+from .configs import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig
 from .utils.process_utils import teleop_processes, standalone_processes
 from .utils.logging_utils import init_logger
 

@@ -41,7 +41,7 @@ import argparse
 from typing import Tuple
 import numpy as np
 from magiclaw.utils.nn_utils import init_model
-from ..config import FingerNetConfig
+from magiclaw.configs import FingerNetConfig
 
 
 class FingerNet:

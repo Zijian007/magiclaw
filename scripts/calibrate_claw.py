@@ -28,7 +28,7 @@ import argparse
 import os
 import time
 from magiclaw.devices.claw import Claw
-from magiclaw.config import ClawConfig
+from magiclaw.configs import ClawConfig
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description="Calibrate the claw.")
