@@ -1,5 +1,5 @@
 mode: web
-ip: "192.168.4.45"
+host: "192.168.4.45"
 port: 5555
 width: 320
 height: 240
@@ -22,18 +22,17 @@ mtx:
 marker_size: 0.008
 filter_on: True
 filter_frame: 5
-marker2global:
-  translation:
+marker2global_tvec:
+  - - 0.0
+    - 0.0
+    - -25.0
+marker2global_rmat:
+  - - - 1.0
+      - 0.0
+      - 0.0
+    - - 0.0
+      - -1.0
+      - 0.0
     - - 0.0
       - 0.0
-      - -25.0
-  rotation:
-    - - - 1.0
-        - 0.0
-        - 0.0
-      - - 0.0
-        - -1.0
-        - 0.0
-      - - 0.0
-        - 0.0
-        - -1.0
+      - -1.0

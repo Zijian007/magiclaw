@@ -54,11 +54,11 @@ It will keep two claws in the same angle and speed, given force feedback for use
 """
 
 import argparse
-import sys
 import time
 import yaml
 import numpy as np
 from pylkmotor import LKMotor
+from ...config import ClawConfig
 
 
 class Claw:
@@ -70,19 +70,7 @@ class Claw:
 
     def __init__(
         self,
-        claw_id: int,
-        bus_interface: str,
-        bus_channel: str,
-        motor_id: int,
-        Kp_b: float,
-        Kp_s: float,
-        Kd: float,
-        iq_max: float,
-        angle_range: float,
-        lead: float,
-        gear_radius: float,
-        motor_angle_deadband: int = 10,
-        motor_speed_deadband: int = 10,
+        claw_cfg: ClawConfig,
         mode: str = "standalone",
     ) -> None:
         """Claw initialization.
@@ -106,9 +94,9 @@ class Claw:
         """
 
         # Set claw parameters
-        self.claw_id = claw_id
-        self.lead = lead
-        self.gear_radius = gear_radius
+        self.claw_id = claw_cfg.claw_id
+        self.lead = claw_cfg.lead
+        self.gear_radius = claw_cfg.gear_radius
         if mode not in ["leader", "follower", "standalone"]:
             raise ValueError(
                 f"Invalid mode: {mode}. The mode should be \"leader\", \"follower\", or \"standalone\"."
@@ -117,22 +105,22 @@ class Claw:
         self.claw_angle = 0
 
         # Set motor parameters
-        self.bus_interface = bus_interface
-        self.bus_channel = bus_channel
-        self.motor_id = motor_id
-        self.Kp_b = Kp_b
-        self.Kp_s = Kp_s
-        self.Kd = Kd
-        self.iq_max = iq_max
+        self.bus_interface = claw_cfg.bus_interface
+        self.bus_channel = claw_cfg.bus_channel
+        self.motor_id = claw_cfg.motor_id
+        self.Kp_b = claw_cfg.Kp_b
+        self.Kp_s = claw_cfg.Kp_s
+        self.Kd = claw_cfg.Kd
+        self.iq_max = claw_cfg.iq_max
         self.motor_angle_offset = 0
         self.motor_angle = 0
-        self.motor_angle_range = angle_range
+        self.motor_angle_range = claw_cfg.angle_range
         self.motor_angle_percent = 0
         self.motor_speed = 0
         self.motor_iq = 0
         self.motor_temperature = 0
-        self.motor_angle_deadband = motor_angle_deadband
-        self.motor_speed_deadband = motor_speed_deadband
+        self.motor_angle_deadband = claw_cfg.motor_angle_deadband
+        self.motor_speed_deadband = claw_cfg.motor_speed_deadband
 
         # Create a LKMotor object
         try:

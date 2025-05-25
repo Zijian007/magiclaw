@@ -1,28 +1,3 @@
-addr:
-  claw:
-    ip: 0.0.0.0
-    port: 5301
-  finger_0:
-    ip: 0.0.0.0
-    port: 5302
-  finger_1:
-    ip: 0.0.0.0
-    port: 5303
-  publisher:
-    ip: 0.0.0.0
-    port: 6300
-camera_0:
-  name: Left Camera
-  params_path: ./config/camera/maixcam-xxxx.yaml
-camera_1:
-  name: Right Camera
-  params_path: ./config/camera/maixcam-xxxx.yaml
-finger_net_0:
-  model_path: ./models/FingerNet.onnx
-  name: Finger Net 0
-finger_net_1:
-  model_path: ./models/FingerNet.onnx
-  name: Finger Net 1
 gear_radius: 15.0
 id: 0
 lead: 15.0
@@ -35,5 +10,3 @@ motor:
   bus_interface: socketcan
   iq_max: 10
   motor_id: 1
-phone:
-  params_path: ./config/phone/phone_0.yaml

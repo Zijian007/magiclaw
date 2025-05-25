@@ -1,0 +1,5 @@
+claw: ./config/claw/claw_0.yaml
+phone: ./config/phone/phone_0.yaml
+camera_0: ./config/camera/maixcam-xxxx.yaml
+camera_1: ./config/camera/maixcam-xxxx.yaml
+fingernet: ./models/FingerNet.onnx

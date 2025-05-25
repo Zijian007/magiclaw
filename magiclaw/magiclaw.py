@@ -29,12 +29,15 @@ and <loop_rate> (default: 30) is the loop rate in Hz.
 import argparse
 import time
 import yaml
-from magiclaw.modes import teleoperation_processes, standalone_processes
-from magiclaw.utils.logging_utils import init_logger
+from .config import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig
+from .utils.process_utils import teleop_processes, standalone_processes
+from .utils.logging_utils import init_logger
 
 
 class MagiClaw:
-    def __init__(self, id: int = 0, mode: str = "standalone") -> None:
+    def __init__(
+        self, id: int = 0, mode: str = "standalone", loop_rate: int = 30
+    ) -> None:
         """
         MagiClaw initialization.
 
@@ -52,7 +55,7 @@ class MagiClaw:
             raise ValueError("\033[31mID must be provided!\033[0m")
         # Set the claw ID
         self.id = id
-        
+
         # Set the mode
         self.mode = mode
         if self.mode not in ["teleop", "standalone"]:
@@ -65,55 +68,70 @@ class MagiClaw:
         self.logger = init_logger(log_file_path)
         self.logger.info(f"Starting MagiClaw with id={self.id}")
 
-        # Load the claw parameters
+        # Load the parameters
         try:
-            with open(f"./configs/claw/claw_{self.id}.yaml", "r") as f:
-                self.claw_params = yaml.safe_load(f)
+            with open(f"./configs/magiclaw_{self.id}.yaml", "r") as f:
+                params = yaml.load(f, Loader=yaml.Loader)
+                
+            self.claw_cfg = ClawConfig()
+            self.claw_cfg.read_config_file(params["claw"])
+            self.zmq_cfg = ZMQConfig()
+            self.zmq_cfg.read_config_file(params["phone"])
+            self.camera_0_cfg = CameraConfig()
+            self.camera_0_cfg.read_config_file(params["camera_0"])
+            self.camera_1_cfg = CameraConfig()
+            self.camera_1_cfg.read_config_file(params["camera_1"])
+            self.fingernet_cfg = FingerNetConfig(model_path=params["fingernet"])
         except FileNotFoundError as e:
             self.logger.error(f"Failed to load configuration file: {e}")
             raise e
-        
+
         # Load the bilateral parameters
         if self.mode == "teleop":
             try:
                 with open(f"./configs/bilateral.yaml", "r") as f:
-                    self.bilateral_params = yaml.load(f, Loader=yaml.Loader)
+                    bilateral_params = yaml.load(f, Loader=yaml.Loader)
+                    self.zmq_cfg.set_bilateral_host(bilateral_params["host"])
             except FileNotFoundError as e:
                 self.logger.error(f"Failed to load configuration file: {e}")
                 raise e
-            
-        # Multi-processing
+
+        # Create processes
         self.processes = []
-        
+        if self.mode == "teleop":
+            self.processes = teleop_processes(
+                logger=self.logger,
+                claw_cfg=self.claw_cfg,
+                camera_0_cfg=self.camera_0_cfg,
+                camera_1_cfg=self.camera_1_cfg,
+                fingernet_cfg=self.fingernet_cfg,
+                zmq_cfg=self.zmq_cfg,
+                mode=bilateral_params["mode"],
+                loop_rate=loop_rate,
+            )
+        else:
+            self.processes = standalone_processes(
+                logger=self.logger,
+                claw_cfg=self.claw_cfg,
+                camera_0_cfg=self.camera_0_cfg,
+                camera_1_cfg=self.camera_1_cfg,
+                fingernet_cfg=self.fingernet_cfg,
+                zmq_cfg=self.zmq_cfg,
+                loop_rate=loop_rate,
+            )
+
         self.logger.info(f"MagiClaw {self.id} initializing with {self.mode} mode")
 
-    def run(self, loop_rate: int = 30) -> None:
+    def run(self) -> None:
         """
         Run the MagiClaw by starting all processes.
-        
+
         Args:
             loop_rate (int): The loop rate in Hz.
         Raises:
             KeyboardInterrupt: If the user interrupts the process.
             Exception: If any error occurs during the process.
         """
-
-        # Create processes
-        if self.mode == "teleop":
-            self.processes = teleoperation_processes(
-                logger=self.logger,
-                addrs=self.claw_params["addr"],
-                bilateral_params=self.bilateral_params,
-                claw_params=self.claw_params,
-                loop_rate=loop_rate,
-            )
-        else:
-            self.processes = standalone_processes(
-                logger=self.logger,
-                addrs=self.claw_params["addr"],
-                claw_params=self.claw_params,
-                loop_rate=loop_rate,
-            )
 
         # Start processes
         try:
@@ -172,7 +190,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Initialize MagiClaw
-    magiclaw = MagiClaw(id=args.id, mode=args.mode)
+    magiclaw = MagiClaw(id=args.id, mode=args.mode, loop_rate=args.loop_rate)
 
     # Run MagiClaw
-    magiclaw.run(loop_rate=args.loop_rate)
+    magiclaw.run()

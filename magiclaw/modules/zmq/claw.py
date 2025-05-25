@@ -7,18 +7,18 @@ from magiclaw.modules.protobuf import claw_msg_pb2
 
 
 class ClawPublisher:
-    def __init__(self, ip, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(self, host: str = "0.0.0.0", port: int = None, hwm: int = 1, conflate: bool = True) -> None:
         """Publisher initialization.
 
         Args:
-            ip (str): The IP address of the publisher.
+            host (str): The host address of the publisher.
             port (int): The port number of the publisher.
             hwm (int): High water mark for the publisher. Default is 1.
             conflate (bool): Whether to conflate messages. Default is True.
         """
 
         print("{:-^80}".format(" Claw Publisher Initialization "))
-        print(f"Address: tcp://{ip}:{port}")
+        print(f"Address: tcp://{host}:{port}")
 
         # Create a ZMQ context
         self.context = zmq.Context()
@@ -29,7 +29,7 @@ class ClawPublisher:
         # Set conflate
         self.publisher.setsockopt(zmq.CONFLATE, conflate)
         # Bind the address
-        self.publisher.bind(f"tcp://{ip}:{port}")
+        self.publisher.bind(f"tcp://{host}:{port}")
 
         # Init the message
         self.claw = claw_msg_pb2.Claw()
@@ -82,18 +82,18 @@ class ClawPublisher:
 
 
 class ClawSubscriber:
-    def __init__(self, ip, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(self, host, port, hwm: int = 1, conflate: bool = True) -> None:
         """Subscriber initialization.
 
         Args:
-            ip (str): The IP address of the subscriber.
+            host (str): The host address of the subscriber.
             port (int): The port number of the subscriber.
             hwm (int): High water mark for the subscriber. Default is 1.
             conflate (bool): Whether to conflate messages. Default is True.
         """
 
         print("{:-^80}".format(" Claw Subscriber Initialization "))
-        print(f"Address: tcp://{ip}:{port}")
+        print(f"Address: tcp://{host}:{port}")
 
         # Create a ZMQ context
         self.context = zmq.Context()
@@ -104,7 +104,7 @@ class ClawSubscriber:
         # Set conflate
         self.subscriber.setsockopt(zmq.CONFLATE, conflate)
         # Connect the address
-        self.subscriber.connect(f"tcp://{ip}:{port}")
+        self.subscriber.connect(f"tcp://{host}:{port}")
         # Subscribe the topic
         self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
         # Set poller

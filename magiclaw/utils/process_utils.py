@@ -10,23 +10,28 @@ They can be combined to create a complete MagiClaw system in both standalone and
 import time
 import yaml
 import cv2
+import multiprocessing
 import numpy as np
 from logging import Logger
 from magiclaw.devices.claw import Claw
 from magiclaw.devices.camera import UsbCamera, WebCamera
-from magiclaw.models.fingernet import FingerNet
+from magiclaw.models import FingerNet
 from magiclaw.modules.zmq import (
     MagiClawPublisher,
     FingerPublisher,
     FingerSubscriber,
     ClawPublisher,
     ClawSubscriber,
+    PhoneSubscriber,
 )
+from magiclaw.config import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig
 from magiclaw.utils.logging_utils import check_system_resources
 
 
 def standalone_claw_process(
-    logger: Logger, claw_addr: dict, claw_params: dict
+    logger: Logger,
+    claw_cfg: ClawConfig,
+    zmq_cfg: ZMQConfig,
 ) -> None:
     """
     Standalone claw process.
@@ -39,23 +44,18 @@ def standalone_claw_process(
         claw_params: The parameters of the claw.
     """
 
-    print("{:=^80}".format(f" MagiClaw {claw_params['id']} Initialization "))
+    print("{:=^80}".format(f" MagiClaw {claw_cfg.claw_id} Initialization "))
     # Initialize the claw
-    claw = Claw(
-        claw_id=claw_params["id"],
-        lead=claw_params["lead"],
-        gear_radius=claw_params["gear_radius"],
-        **claw_params["motor"],
-    )
+    claw = Claw(claw_cfg, mode="standalone")
 
     # Initialize the publisher with high water mark to limit buffer
-    claw_publisher = ClawPublisher(ip=claw_addr["ip"], port=claw_addr["port"])
+    claw_publisher = ClawPublisher(host=zmq_cfg.public_host, port=zmq_cfg.claw_port)
 
-    print(f" MagiClaw {claw_params['id']} Initialization Done.")
+    print(f" MagiClaw {claw_cfg.claw_id} Initialization Done.")
     print("{:=^80}".format(""))
 
     # Start the loop
-    logger.info(f"Claw {claw_params['id']} process started")
+    logger.info(f"Claw {claw_cfg.claw_id} process started")
 
     # Set the loop period
     loop_start = time.time()
@@ -95,7 +95,7 @@ def standalone_claw_process(
             loop_start = time.time()
     except KeyboardInterrupt:
         # Handle keyboard interrupt
-        logger.info(f"Claw {claw_params['id']} process terminated by user")
+        logger.info(f"Claw {claw_cfg.claw_id} process terminated by user")
     except MemoryError:
         # Handle memory error
         logger.error(f"Memory error in claw process, cleaning up...")
@@ -112,9 +112,8 @@ def standalone_claw_process(
 
 def bilateral_claw_process(
     logger: Logger,
-    claw_addr: dict,
-    bilateral_addr: dict,
-    claw_params: dict,
+    claw_cfg: ClawConfig,
+    zmq_cfg: ZMQConfig,
     mode: str,
 ) -> None:
     """
@@ -130,27 +129,24 @@ def bilateral_claw_process(
         claw_params: The parameters of the claw.
     """
 
-    print("{:=^80}".format(f" MagiClaw {claw_params['id']} Initialization "))
+    print("{:=^80}".format(f" MagiClaw {claw_cfg.claw_id} Initialization "))
     # Initialize the claw
     claw = Claw(
-        claw_id=claw_params["id"],
-        lead=claw_params["lead"],
-        gear_radius=claw_params["gear_radius"],
+        claw_cfg,
         mode=mode,
-        **claw_params["motor"],
     )
 
     # Initialize the publisher with high water mark to limit buffer
-    claw_publisher = ClawPublisher(ip=claw_addr["ip"], port=claw_addr["port"])
+    claw_publisher = ClawPublisher(host=zmq_cfg.public_host, port=zmq_cfg.claw_port)
     bilateral_subscriber = ClawSubscriber(
-        ip=bilateral_addr["ip"], port=claw_addr["port"]
+        host=zmq_cfg.bilateral_host, port=zmq_cfg.claw_port
     )
 
-    print(f" MagiClaw {claw_params['id']} Initialization Done.")
+    print(f" MagiClaw {claw_cfg.claw_id} Initialization Done.")
     print("{:=^80}".format(""))
 
     # Start the loop
-    logger.info(f"Claw {claw_params['id']} process started")
+    logger.info(f"Claw {claw_cfg.claw_id} process started")
 
     # Set the loop period
     loop_start = time.time()
@@ -210,7 +206,7 @@ def bilateral_claw_process(
                 time.sleep(remaining_time)
     except KeyboardInterrupt:
         # Handle keyboard interrupt
-        logger.info(f"Claw {claw_params['id']} process terminated by user")
+        logger.info(f"Claw {claw_cfg.claw_id} process terminated by user")
     except MemoryError:
         # Handle memory error
         logger.error(f"Memory error in claw process, cleaning up...")
@@ -229,9 +225,9 @@ def bilateral_claw_process(
 def finger_process(
     logger: Logger,
     finger_index: int,
-    finger_addr: dict,
-    camera_params_path: str,
-    finger_net_params: dict,
+    camera_cfg: CameraConfig,
+    fingernet_cfg: FingerNetConfig,
+    zmq_cfg: ZMQConfig,
     loop_rate: int = 60,
 ) -> None:
     """
@@ -250,37 +246,31 @@ def finger_process(
 
     print("{:=^80}".format(f" Finger {finger_index} Initialization "))
 
-    # Initialize camera
-    with open(camera_params_path, "r") as f:
-        camera_params = yaml.load(f.read(), Loader=yaml.Loader)
-
     # Load detector parameters
     with open(f"./configs/detector.yaml", "r") as f:
         detector_params = yaml.load(f, Loader=yaml.Loader)
 
     # Initialize camera based on the mode
-    if camera_params["mode"] == "usb":
+    if camera_cfg.mode == "usb":
         camera = UsbCamera(
             name=f"camera_{finger_index}",
-            camera_params=camera_params,
-            detector_params=detector_params,
+            camera_cfg=camera_cfg,
         )
-    elif camera_params["mode"] == "web":
+    elif camera_cfg.mode == "web":
         camera = WebCamera(
             name=f"camera_{finger_index}",
-            camera_params=camera_params,
-            detector_params=detector_params,
+            camera_cfg=camera_cfg,
         )
     else:
         raise ValueError("\033[31mUnsupported camera mode!\033[0m")
 
     # Initialize finger net
-    finger_net = FingerNet(
-        name=finger_net_params["name"], model_path=finger_net_params["model_path"]
-    )
+    fingernet = FingerNet(fingernet_cfg)
 
     # Initialize publisher with high water mark
-    finger_publisher = FingerPublisher(ip=finger_addr["ip"], port=finger_addr["port"])
+    finger_publisher = FingerPublisher(
+        host=zmq_cfg.public_host, port=getattr(zmq_cfg, f"finger_{finger_index}_port")
+    )
 
     print(f" Finger {finger_index} Initialization Done.")
     print("{:=^80}".format(""))
@@ -309,7 +299,7 @@ def finger_process(
             pose_euler = camera.poseVectorToEuler(pose_global)
 
             # Predict the force and node
-            force, node = finger_net.infer(pose_euler)
+            force, node = fingernet.infer(pose_euler)
 
             # Publish the data
             finger_publisher.publishMessage(
@@ -341,10 +331,7 @@ def finger_process(
 
 def publish_process(
     logger: Logger,
-    claw_addr: dict,
-    finger_0_addr: dict,
-    finger_1_addr: dict,
-    publisher_addr: dict,
+    zmq_cfg: ZMQConfig,
     loop_rate: int = 60,
 ) -> None:
     """
@@ -363,15 +350,16 @@ def publish_process(
     print("{:=^80}".format(" MagiClaw Publisher Initialization "))
 
     # Initialize subscribers with settings to only get latest message
-    claw_subscriber = ClawSubscriber(ip=claw_addr["ip"], port=claw_addr["port"])
+    claw_subscriber = ClawSubscriber(host=zmq_cfg.public_host, port=zmq_cfg.claw_port)
     finger_0_subscriber = FingerSubscriber(
-        ip=finger_0_addr["ip"], port=finger_0_addr["port"]
+        host=zmq_cfg.public_host, port=zmq_cfg.finger_0_port
     )
     finger_1_subscriber = FingerSubscriber(
-        ip=finger_1_addr["ip"], port=finger_1_addr["port"]
+        host=zmq_cfg.public_host, port=zmq_cfg.finger_1_port
     )
+    phone_subscriber = PhoneSubscriber(host=zmq_cfg.phone_host, port=zmq_cfg.phone_port)
     magiclaw_publisher = MagiClawPublisher(
-        ip=publisher_addr["ip"], port=publisher_addr["port"]
+        host=zmq_cfg.public_host, port=zmq_cfg.publish_port
     )
 
     print(" MagiClaw Publisher Initialization Done.")
@@ -386,9 +374,14 @@ def publish_process(
         while True:
             # Get claw data
             try:
-                claw_angle, motor_angle, motor_angle_percent, motor_speed, motor_iq, motor_temperature = (
-                    claw_subscriber.subscribeMessage()
-                )
+                (
+                    claw_angle,
+                    motor_angle,
+                    motor_angle_percent,
+                    motor_speed,
+                    motor_iq,
+                    motor_temperature,
+                ) = claw_subscriber.subscribeMessage()
             except Exception as e:
                 logger.error(f"Error in claw subscriber: {str(e)}")
                 claw_angle = 0.0
@@ -422,6 +415,25 @@ def publish_process(
                 force_1 = np.zeros(6, dtype=np.float32)
                 node_1 = np.zeros(6, dtype=np.float32)
 
+            # Get phone data
+            try:
+                (
+                    phone_color_img_bytes,
+                    phone_depth_img,
+                    phone_depth_width,
+                    phone_depth_height,
+                    phone_local_pose,
+                    phone_global_pose,
+                ) = phone_subscriber.subscribeMessage()
+            except Exception as e:
+                logger.error(f"Error in phone subscriber: {str(e)}")
+                phone_color_img_bytes = b""
+                phone_depth_img = np.zeros((480, 640), dtype=np.uint16)
+                phone_depth_width = 0
+                phone_depth_height = 0
+                phone_local_pose = np.zeros(6, dtype=np.float32)
+                phone_global_pose = np.zeros(6, dtype=np.float32)
+
             # Publish the data
             magiclaw_publisher.publishMessage(
                 claw_angle=claw_angle,
@@ -437,6 +449,12 @@ def publish_process(
                 pose_1=pose_1,
                 force_1=force_1,
                 node_1=node_1,
+                phone_color_img_bytes=phone_color_img_bytes,
+                phone_depth_img=phone_depth_img,
+                phone_depth_width=phone_depth_width,
+                phone_depth_height=phone_depth_height,
+                phone_local_pose=phone_local_pose,
+                phone_global_pose=phone_global_pose,
             )
 
             # Increment the message count
@@ -476,3 +494,130 @@ def publish_process(
         finger_1_subscriber.close()
         magiclaw_publisher.close()
         return
+
+
+def standalone_processes(
+    logger,
+    claw_cfg: ClawConfig,
+    camera_0_cfg: CameraConfig,
+    camera_1_cfg: CameraConfig,
+    fingernet_cfg: FingerNetConfig,
+    zmq_cfg: ZMQConfig,
+    loop_rate: int,
+) -> list:
+    """
+    Generate processes for standalone mode.
+
+    Args:
+        logger (logging.Logger): The logger object.
+        zmq_cfg (ZMQConfig): The ZMQ configuration object.
+        claw_cfg (ClawConfig): The claw configuration object.
+        camera_cfg (CameraConfig): The camera configuration object.
+        fingernet_cfg (FingerNetConfig): The finger net configuration object.
+        loop_rate (int): The loop rate in Hz.
+    """
+
+    # Create a list to store the processes
+    processes = []
+
+    # Create processes
+    processes.append(
+        multiprocessing.Process(
+            target=standalone_claw_process,
+            args=(logger, claw_cfg, zmq_cfg),
+        )
+    )
+
+    # Create the finger 0 process
+    processes.append(
+        multiprocessing.Process(
+            target=finger_process,
+            args=(logger, 0, camera_0_cfg, fingernet_cfg, zmq_cfg, loop_rate),
+            name="finger_0_process",
+        )
+    )
+
+    # Create the finger 1 process
+    processes.append(
+        multiprocessing.Process(
+            target=finger_process,
+            args=(logger, 1, camera_1_cfg, fingernet_cfg, zmq_cfg, loop_rate),
+            name="finger_1_process",
+        )
+    )
+
+    # Create the publish process
+    processes.append(
+        multiprocessing.Process(
+            target=publish_process,
+            args=(logger, zmq_cfg, loop_rate),
+            name="publish_process",
+        )
+    )
+
+    return processes
+
+
+def teleop_processes(
+    logger,
+    claw_cfg: ClawConfig,
+    camera_0_cfg: CameraConfig,
+    camera_1_cfg: CameraConfig,
+    fingernet_cfg: FingerNetConfig,
+    zmq_cfg: ZMQConfig,
+    mode: str,
+    loop_rate: int,
+) -> list:
+    """
+    Generate processes for teleoperation mode.
+
+    Args:
+        logger (logging.Logger): The logger object.
+        zmq_cfg (ZMQConfig): The ZMQ configuration object.
+        claw_cfg (ClawConfig): The claw configuration object.
+        camera_cfg (CameraConfig): The camera configuration object.
+        fingernet_cfg (FingerNetConfig): The finger net configuration object.
+        mode (str): The mode to run the claw in, "leader" or "follower".
+        loop_rate (int): The loop rate in Hz.
+    """
+
+    # Create a list to store the processes
+    processes = []
+
+    # Create the claw process
+    processes.append(
+        multiprocessing.Process(
+            target=bilateral_claw_process,
+            args=(logger, claw_cfg, zmq_cfg, mode),
+            name="claw_process",
+        )
+    )
+
+    # Create the finger 0 process
+    processes.append(
+        multiprocessing.Process(
+            target=finger_process,
+            args=(logger, 0, camera_0_cfg, fingernet_cfg, zmq_cfg, loop_rate),
+            name="finger_0_process",
+        )
+    )
+
+    # Create the finger 1 process
+    processes.append(
+        multiprocessing.Process(
+            target=finger_process,
+            args=(logger, 1, camera_1_cfg, fingernet_cfg, zmq_cfg, loop_rate),
+            name="finger_1_process",
+        )
+    )
+
+    # Create the publish process
+    processes.append(
+        multiprocessing.Process(
+            target=publish_process,
+            args=(logger, zmq_cfg, loop_rate),
+            name="publish_process",
+        )
+    )
+
+    return processes

@@ -27,7 +27,7 @@ message Finger
 message Phone
 {
     bytes color_img = 1;
-    repeated int32 depth_img = 2;
+    repeated float depth_img = 2;
     int32 depth_width = 3;
     int32 depth_height = 4;
     repeated float local_pose = 5;

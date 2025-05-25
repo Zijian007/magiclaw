@@ -1,11 +1,9 @@
-id: 0
-ip: "192.168.31.225"
-port: 8000
+host: "192.168.31.225"
 
 color_img:
   width: 640
   height: 480
 
 depth_img:
-  width: 640
-  height: 480
+  width: 256
+  height: 192

@@ -8,18 +8,18 @@ from magiclaw.modules.protobuf import magiclaw_msg_pb2
 
 
 class MagiClawPublisher:
-    def __init__(self, ip, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(self, host, port, hwm: int = 1, conflate: bool = True) -> None:
         """Publisher initialization.
 
         Args:
-            ip (str): The IP address of the publisher.
+            host (str): The host address of the publisher.
             port (int): The port number of the publisher.
             hwm (int): High water mark for the publisher. Default is 1.
             conflate (bool): Whether to conflate messages. Default is True.
         """
 
         print("{:-^80}".format(" Claw Publisher Initialization "))
-        print(f"Address: tcp://{ip}:{port}")
+        print(f"Address: tcp://{host}:{port}")
 
         # Create a ZMQ context
         self.context = zmq.Context()
@@ -30,7 +30,7 @@ class MagiClawPublisher:
         # Set conflate
         self.publisher.setsockopt(zmq.CONFLATE, conflate)
         # Bind the address
-        self.publisher.bind(f"tcp://{ip}:{port}")
+        self.publisher.bind(f"tcp://{host}:{port}")
 
         # Init the message
         self.magiclaw = magiclaw_msg_pb2.MagiClaw()
@@ -69,7 +69,8 @@ class MagiClawPublisher:
         phone_depth_img: np.ndarray = np.array([]),
         phone_depth_width: int = 0,
         phone_depth_height: int = 0,
-        phone_pose: np.ndarray = np.array([]),
+        phone_local_pose: np.ndarray = np.array([]),
+        phone_global_pose: np.ndarray = np.array([]),
     ) -> None:
         """Publish the message.
 
@@ -99,7 +100,8 @@ class MagiClawPublisher:
         self.magiclaw.phone.depth_img[:] = phone_depth_img.flatten().tolist()
         self.magiclaw.phone.depth_width = phone_depth_width
         self.magiclaw.phone.depth_height = phone_depth_height
-        self.magiclaw.phone.pose[:] = phone_pose.flatten().tolist()
+        self.magiclaw.phone.local_pose[:] = phone_local_pose.flatten().tolist()
+        self.magiclaw.phone.global_pose[:] = phone_global_pose.flatten().tolist()
         
         # Publish the message
         self.publisher.send(self.magiclaw.SerializeToString())
@@ -113,18 +115,18 @@ class MagiClawPublisher:
 
 
 class MagiClawSubscriber:
-    def __init__(self, ip, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(self, host, port, hwm: int = 1, conflate: bool = True) -> None:
         """Subscriber initialization.
 
         Args:
-            ip (str): The IP address of the subscriber.
+            host (str): The host address of the subscriber.
             port (int): The port number of the subscriber.
             hwm (int): High water mark for the subscriber. Default is 1.
             conflate (bool): Whether to conflate messages. Default is True.
         """
 
         print("{:-^80}".format(" Claw Subscriber Initialization "))
-        print(f"Address: tcp://{ip}:{port}")
+        print(f"Address: tcp://{host}:{port}")
 
         # Create a ZMQ context
         self.context = zmq.Context()
@@ -135,7 +137,7 @@ class MagiClawSubscriber:
         # Set conflate
         self.subscriber.setsockopt(zmq.CONFLATE, conflate)
         # Connect the address
-        self.subscriber.connect(f"tcp://{ip}:{port}")
+        self.subscriber.connect(f"tcp://{host}:{port}")
         # Subscribe all messages
         self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
 
@@ -195,7 +197,8 @@ class MagiClawSubscriber:
         phone_depth_img = np.array(self.magiclaw.phone.depth_img).reshape(
             self.magiclaw.phone.depth_height, self.magiclaw.phone.depth_width
         )
-        phone_pose = np.array(self.magiclaw.phone.pose)
+        phone_local_pose = np.array(self.magiclaw.phone.local_pose)
+        phone_global_pose = np.array(self.magiclaw.phone.global_pose)
         
         return (
             claw_angle,
@@ -213,7 +216,8 @@ class MagiClawSubscriber:
             finger_1_node,
             phone_color_img,
             phone_depth_img,
-            phone_pose
+            phone_local_pose,
+            phone_global_pose,
         )
 
     def close(self):

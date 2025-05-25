@@ -1,3 +1,2 @@
-addr:
-  ip: "xx.xx.xx.xx"
+host: "xx.xx.xx.xx"
 mode: "leader"

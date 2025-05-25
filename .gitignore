@@ -180,4 +180,4 @@ log/
 configs/
 
 # protobuf python
-*.pb2.py
+*pb2.py

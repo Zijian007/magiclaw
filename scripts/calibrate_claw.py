@@ -12,7 +12,7 @@ Usage:
 To run the script, use the following command:
 
 ```
-python calibrate_claw.py --id <claw_id>
+python scritps/calibrate_claw.py --id <claw_id>
 ```
 
 where `<claw_id>` is the ID of the claw to calibrate (default: 0).
@@ -27,8 +27,8 @@ During deployment, the claw converts the minmimum angle as 0, and the maximum an
 import argparse
 import os
 import time
-import yaml
 from magiclaw.devices.claw import Claw
+from magiclaw.config import ClawConfig
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description="Calibrate the claw.")
@@ -45,9 +45,6 @@ if not os.path.exists(f"configs/claw/claw_{args.id}.yaml"):
     raise FileNotFoundError(
         f"Configuration file for claw {args.id} not found. Please create it first."
     )
-# Load the configuration file
-with open(f"configs/claw/claw_{args.id}.yaml", "r") as f:
-    claw_params = yaml.load(f.read(), Loader=yaml.Loader)
 
 # Close and open the claw to find the angle range for 5 times and calculate the average
 print("The claw will close and open to find the angle range for 5 times.")
@@ -55,11 +52,10 @@ print("Please make sure the claw is not blocked and connected to the RPi5.")
 input("Press `enter` to start...")
 
 # Create a Claw object
+claw_cfg = ClawConfig()
+claw_cfg.read_config_file(f"configs/claw/claw_{args.id}.yaml")
 claw = Claw(
-    claw_id=claw_params["id"],
-    lead=claw_params["lead"],
-    gear_radius=claw_params["gear_radius"],
-    **claw_params["motor"],
+    claw_cfg=claw_cfg,
 )
 
 # Initialize the angle range
@@ -104,9 +100,14 @@ angle_range = angle_max - angle_min
 print(f"Angle range: {angle_range:.2f} degrees")
 
 # Update the configuration file
-claw_params["motor"]["angle_range"] = round(angle_range, 2)
+claw_cfg.angle_range = round(angle_range, 2)
 
 # Save the updated configuration file
 with open(f"configs/claw/claw_{args.id}.yaml", "w") as f:
-    yaml.dump(claw_params, f)
+    # find the line with "angle_range"
+    lines = f.readlines()
+    for i, line in enumerate(lines):
+        if "angle_range" in line:
+            lines[i] = f"  angle_range: {claw_cfg.angle_range}\n"
+            break
 print("The configuration file has been updated.")

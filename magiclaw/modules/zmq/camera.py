@@ -7,17 +7,17 @@ from magiclaw.modules.protobuf import cam_msg_pb2
 
 
 class CameraSubscriber:
-    def __init__(self, ip, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(self, host, port, hwm: int = 1, conflate: bool = True) -> None:
         """Subscriber initialization.
 
         Args:
-            ip (str): The IP address of the subscriber.
+            host (str): The host address of the subscriber.
             port (int): The port number of the subscriber.
             hwm (int): High water mark for the subscriber. Default is 1.
             conflate (bool): Whether to conflate messages. Default is True.
         """
 
-        print(f"Address: tcp://{ip}:{port}")
+        print(f"Address: tcp://{host}:{port}")
 
         # Create a ZMQ context
         self.context = zmq.Context()
@@ -28,7 +28,7 @@ class CameraSubscriber:
         # Set conflate
         self.subscriber.setsockopt(zmq.CONFLATE, conflate)
         # Connect the address
-        self.subscriber.connect(f"tcp://{ip}:{port}")
+        self.subscriber.connect(f"tcp://{host}:{port}")
         # Subscribe the topic
         self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
         # Use poller to implement timeout

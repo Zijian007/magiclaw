@@ -41,6 +41,7 @@ import argparse
 from typing import Tuple
 import numpy as np
 from magiclaw.utils.nn_utils import init_model
+from ..config import FingerNetConfig
 
 
 class FingerNet:
@@ -59,7 +60,10 @@ class FingerNet:
         model (onnxruntime.InferenceSession): The ONNX runtime model.
     """
 
-    def __init__(self, name: str, model_path: str, device: str = "auto") -> None:
+    def __init__(
+        self, 
+        fingernet_cfg: FingerNetConfig = FingerNetConfig(),
+    ) -> None:
         """
         FingerNet initialization.
 
@@ -72,12 +76,12 @@ class FingerNet:
         """
 
         # Set the name and model path
-        self.name = name
-        self.model_path = model_path
+        self.name = fingernet_cfg.name
+        self.model_path = fingernet_cfg.model_path
 
         # Create a ONNX runtime model
         try:
-            self.model = init_model(self.model_path, device)
+            self.model = init_model(self.model_path, fingernet_cfg.device)
         except Exception as e:
             raise ValueError(f"Failed to load the model: {e}")
 
