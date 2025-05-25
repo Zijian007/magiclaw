@@ -13,6 +13,20 @@ import yaml
 class CameraConfig:
     """
     Camera configuration class.
+    
+    Attributes:
+        mode (str): The mode of the camera. Can be "web" or "usb".
+        host (str): The host address of the camera.
+        port (int): The port number of the camera.
+        width (int): The width of the camera image.
+        height (int): The height of the camera image.
+        dist (np.ndarray): The distortion coefficients of the camera.
+        mtx (np.ndarray): The camera matrix.
+        marker_size (float): The size of the marker in meters.
+        filter_on (bool): Whether to apply a filter to the image.
+        filter_frame (int): The size of the filter kernel.
+        marker2global_tvec (np.ndarray): The translation vector from the marker to the global frame.
+        marker2global_rmat (np.ndarray): The rotation vector from the marker to the global frame.
     """
 
     def __init__(

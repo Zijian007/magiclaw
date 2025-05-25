@@ -4,11 +4,11 @@ import argparse
 import sys
 import time
 import cv2
-import yaml
 import numpy as np
-from typing import Optional, Tuple
+from typing import Tuple
 from collections import deque
 from scipy.spatial.transform import Rotation as R
+from magiclaw.config import CameraConfig, DetectorConfig
 
 
 class UsbCamera:
@@ -22,16 +22,16 @@ class UsbCamera:
     def __init__(
         self,
         name: str,
-        camera_params: dict,
-        detector_params: Optional[dict] = None,
+        camera_cfg: CameraConfig,
+        detector_cfg: DetectorConfig = DetectorConfig(),
     ) -> None:
         """
         Initialize the UsbCamera.
 
         Args:
-            name: The name of the camera.
-            camera_params: The camera parameters.
-            detector_params: The detector parameters.
+            name (str): The name of the camera.
+            camera_cfg (CameraConfig): The camera configuration.
+            detector_cfg (DetectorConfig): The detector configuration.
         """
 
         # Camera initialization
@@ -40,11 +40,11 @@ class UsbCamera:
         # Set the camera parameters
         self.mode = "usb"
         print(f"Camera mode: {self.mode.upper()}")
-        self.width = camera_params["width"]
-        self.height = camera_params["height"]
-        self.mtx = np.array(camera_params["mtx"])
-        self.dist = np.array(camera_params["dist"])
-        self.id = camera_params["id"]
+        self.width = camera_cfg.width
+        self.height = camera_cfg.height
+        self.mtx = np.array(camera_cfg.mtx)
+        self.dist = np.array(camera_cfg.dist)
+        self.id = camera_cfg.id
         print(f"Camera id: {self.id}")
         self.camera = cv2.VideoCapture(self.id)
         self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc("M", "J", "P", "G"))
@@ -63,14 +63,18 @@ class UsbCamera:
         print("{:-^80}".format(" ArUco Detector Initialization "))
         # Set the detector parameters
         aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
-        aruco_params = cv2.aruco.DetectorParameters()
-        if not detector_params:
-            for key in detector_params:
-                aruco_params.__setattr__(key, detector_params[key])
-        self.detector = cv2.aruco.ArucoDetector(aruco_dict, aruco_params)
+        aruco_detector_params = cv2.aruco.DetectorParameters()
+        for attr, value in vars(detector_cfg):
+            aruco_detector_params.__setattr__(attr, value)
+        self.detector = cv2.aruco.ArucoDetector(aruco_dict, aruco_detector_params)
+        self.aruco_estimate_params = cv2.aruco.EstimateParameters()
+        self.aruco_estimate_params.solvePnPMethod = cv2.SOLVEPNP_IPPE_SQUARE
         # Set the marker size
-        self.marker_size = camera_params["marker_size"]
+        self.marker_size = camera_cfg.marker_size
         print(f"Marker size: {self.marker_size}")
+        # Set the translation and rotation from marker frame to global frame
+        self.transfer_tvec = np.array(camera_cfg.marker2global_tvec)
+        self.transfer_rmat = np.array(camera_cfg.marker2global_rmat)
         # Set the initial pose
         self.init_pose = np.zeros(6)
         # Set the pose
@@ -82,8 +86,8 @@ class UsbCamera:
         # self.sharpen_kernel = np.ones((5, 5), np.float32) / 25
         
         # Set the filter parameters
-        self.filter_on = camera_params["filter_on"]
-        self.filter_frame = camera_params["filter_frame"]
+        self.filter_on = camera_cfg.filter_on
+        self.filter_frame = camera_cfg.filter_frame
         print(f"Pose Filter: {self.filter_on}")
         if self.filter_on:
             print(f"Filter frame: {self.filter_frame}")
@@ -472,19 +476,13 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # Read the camera parameters
-    with open(args.params_path, "r") as f:
-        camera_params = yaml.load(f.read(), Loader=yaml.Loader)
-
-    with open("./configs/detector.yaml", "r") as f:
-        detector_params = yaml.load(f.read(), Loader=yaml.Loader)
-
     try:
         # Create a camera
+        camera_cfg = CameraConfig()
+        camera_cfg.read_config_file(args.params_path)
         camera = UsbCamera(
             name=args.name,
-            camera_params=camera_params,
-            detector_params=detector_params,
+            camera_cfg=camera_cfg,
         )
         show_img = args.show_img
 

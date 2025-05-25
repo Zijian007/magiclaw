@@ -4,14 +4,12 @@ import argparse
 import sys
 import time
 import cv2
-import yaml
 import numpy as np
 from typing import Tuple
 from collections import deque
 from scipy.spatial.transform import Rotation as R
 from magiclaw.modules.zmq import CameraSubscriber
-from magiclaw.config import CameraConfig
-from magiclaw.config import DetectorConfig
+from magiclaw.config import CameraConfig, DetectorConfig
 
 
 class WebCamera:
@@ -32,9 +30,9 @@ class WebCamera:
         Initialize the WebCamera.
 
         Args:
-            name: The name of the camera.
-            camera_params: The camera parameters.
-            detector_params: The detector parameters.
+            name (str): The name of the camera.
+            camera_cfg (CameraConfig): The camera configuration.
+            detector_cfg (DetectorConfig): The detector configuration.
         """
 
         # Camera initialization
@@ -470,10 +468,6 @@ if __name__ == "__main__":
         help="Show the image captured by the camera (default: False).",
     )
     args = parser.parse_args()
-
-    # Read the camera parameters
-    with open(args.params_path, "r") as f:
-        camera_params = yaml.load(f.read(), Loader=yaml.Loader)
 
     try:
         # Create a camera

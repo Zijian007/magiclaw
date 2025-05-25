@@ -13,6 +13,17 @@ import yaml
 class ZMQConfig:
     """
     ZMQ configuration class.
+    
+    Attributes:
+        claw_id (int): The ID of the claw.
+        public_host (str): The host address for the ZMQ connection.
+        claw_port (int): The port for the claw connection.
+        finger_0_port (int): The port for finger 0 connection.
+        finger_1_port (int): The port for finger 1 connection.
+        publish_port (int): The port for publishing data.
+        phone_host (str): The host address of the phone.
+        phone_port (int): The port for the phone connection.
+        bilateral_host (str): The host address of the bilateral connection.
     """
 
     def __init__(

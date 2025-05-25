@@ -10,6 +10,11 @@ This module contains the configuration for the FingerNet model.
 class FingerNetConfig:
     """
     FingerNet configuration class.
+    
+    Attributes:
+        name (str): The name of the model.
+        model_path (str): The path of the model.
+        device (str): The device to use for inference. Default is "auto".
     """
 
     def __init__(

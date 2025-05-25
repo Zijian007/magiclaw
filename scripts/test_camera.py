@@ -32,6 +32,7 @@ os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "video_codec;h264"
 # Import CV2 after environment setup
 import cv2
 from magiclaw.devices.camera import UsbCamera, WebCamera
+from magiclaw.config import CameraConfig
 
 
 def camera_test(params_path: str, headless: bool = False, save_images: bool = False):
@@ -45,26 +46,20 @@ def camera_test(params_path: str, headless: bool = False, save_images: bool = Fa
     """
 
     # Initialize camera
-    with open(params_path, "r") as f:
-        camera_params = yaml.load(f.read(), Loader=yaml.Loader)
-
-    # Load detector parameters
-    with open(f"./config/detector.yaml", "r") as f:
-        detector_params = yaml.load(f, Loader=yaml.Loader)
+    camera_cfg = CameraConfig()
+    camera_cfg.read_config_file(params_path)
     camera_name = os.path.basename(params_path).split(".")[0]
     
     # Initialize camera based on the mode
-    if camera_params["mode"] == "usb":
+    if camera_cfg.mode == "usb":
         camera = UsbCamera(
             name=camera_name,
-            camera_params=camera_params,
-            detector_params=detector_params,
+            camera_cfg=camera_cfg,
         )
-    elif camera_params["mode"] == "web":
+    elif camera_cfg.mode == "web": 
         camera = WebCamera(
             name=camera_name,
-            camera_params=camera_params,
-            detector_params=detector_params,
+            camera_cfg=camera_cfg,
         )
     else:
         raise ValueError("\033[31mUnsupported camera mode!\033[0m")

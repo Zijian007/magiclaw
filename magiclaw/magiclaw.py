@@ -44,6 +44,7 @@ class MagiClaw:
         Args:
             id (int): The ID of the claw.
             mode (str): The mode to run MagiClaw in. (default: "standalone")
+            loop_rate (int): The loop rate in Hz. (default: 30)
         Raises:
             ValueError: If the claw ID is invalid or not provided.
         """

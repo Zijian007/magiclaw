@@ -39,10 +39,10 @@ def main():
     args = parser.parse_args()
 
     # Initialize MagiClaw
-    magiclaw = MagiClaw(id=args.id, mode=args.mode)
+    magiclaw = MagiClaw(id=args.id, mode=args.mode, loop_rate=args.loop_rate)
 
     # Run MagiClaw
-    magiclaw.run(loop_rate=args.loop_rate)
+    magiclaw.run()
     
 if __name__ == "__main__":
     main()
