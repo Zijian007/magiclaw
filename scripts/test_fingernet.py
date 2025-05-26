@@ -21,32 +21,23 @@ where <params_path> is the path to the FingerNet parameters file.
 """
 
 import argparse
-import os
-import yaml
 import numpy as np
 from magiclaw.models.fingernet import FingerNet
+from magiclaw.config import FingerNetConfig
 
 
-def fingernet_test(params_path: str):
+def fingernet_test(onnx_path: str):
     """
     Test the FingerNet model.
-    
+
     Args:
-        params_path (str): The path of the FingerNet parameters.
+        onnx_path (str): The path of the FingerNet ONNX model file.
     """
 
     # Initialize FingerNet
-    with open(params_path, "r") as f:
-        fingernet_params = yaml.load(f.read(), Loader=yaml.Loader)
-    fingernet_name = os.path.basename(params_path).split(".")[0]
-    
-    # Initialize FingerNet
-    fingernet = FingerNet(
-        name=fingernet_name,
-        model_path=fingernet_params["model_path"],
-        device=fingernet_params["device"],
-    )
-    
+    fingernet_cfg = FingerNetConfig(model_path=onnx_path)
+    fingernet = FingerNet(fingernet_cfg)
+
     # Test the model
     print("Give a sample input to the model and check the output.")
     # Generate input
@@ -60,17 +51,17 @@ def fingernet_test(params_path: str):
     print("Input:", inputs)
     for i, output in enumerate(outputs):
         print(f"Output {i}:", output)
-    
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Test the FingerNet model.")
     parser.add_argument(
-        "--params_path",
+        "--onnx_path",
         type=str,
-        default="./configs/fingernet/fingernet.yaml",
-        help="The path to the FingerNet parameters file.",
+        required=True,
+        help="Path to the FingerNet ONNX model file.",
     )
     args = parser.parse_args()
 
     # Run the test
-    fingernet_test(args.params_path)
+    fingernet_test(args.onnx_path)

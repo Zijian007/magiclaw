@@ -4,6 +4,7 @@ import argparse
 import os
 import yaml
 from magiclaw.modules.zmq import PhoneSubscriber
+from magiclaw.config import ZMQConfig
 
 # Configure OpenCV for headless environment BEFORE importing cv2
 os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"  # Disable Windows Media Foundation

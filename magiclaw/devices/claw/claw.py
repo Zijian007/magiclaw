@@ -16,16 +16,10 @@ This module provides a class to control the claw. To initialize the claw, you ca
 from magiclaw.devices.claw import Claw
 
 claw = Claw(
-    claw_id=<claw_id>,
-    lead=<lead>,
-    gear_radius=<gear_radius>,
-    mode=<"leader" | "follower" | "standalone">,
-    **motor_params
+    claw_cfg=ClawConfig()
+    mode="standalone"  # or "leader" or "follower"
 )
 ```
-
-where `<claw_id>` is the ID of the claw, `<lead>` is the lead of the screw, `<gear_radius>` is the radius of the gear,
-and `motor_params` are the parameters of the motor.
 
 The claw class provides methods to control the claw, including opening and closing the claw, position control,
 torque control, spring damping control, bilateral control, and bilateral spring damping control.
@@ -50,7 +44,7 @@ claw.bilateral_spring_damping_control(
 
 where `bilateral_motor_angle_percent` is the percentage of the motor angle, `bilateral_motor_speed` is the speed of
 the motor, and `target_angle` is the target angle of the claw. The `mode` parameter can be set to "leader" or "follower".
-It will keep two claws in the same angle and speed, given force feedback for users.
+It will keep two claws in the same angle and speed, as well as providing force feedback to users.
 """
 
 import argparse
