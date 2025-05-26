@@ -177,7 +177,7 @@ test.py
 log/
 
 # config
-configs/*.yaml
+configs/
 
 # protobuf python
 *pb2.py

@@ -32,7 +32,7 @@ os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "video_codec;h264"
 # Import CV2 after environment setup
 import cv2
 from magiclaw.devices.camera import UsbCamera, WebCamera
-from magiclaw.configs import CameraConfig
+from magiclaw.config import CameraConfig
 
 
 def camera_test(params_path: str, headless: bool = False, save_images: bool = False):

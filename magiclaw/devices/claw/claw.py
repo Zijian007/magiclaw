@@ -58,7 +58,7 @@ import time
 import yaml
 import numpy as np
 from pylkmotor import LKMotor
-from ...configs import ClawConfig
+from magiclaw.config import ClawConfig
 
 
 class Claw:

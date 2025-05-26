@@ -8,7 +8,7 @@ import numpy as np
 from typing import Tuple
 from collections import deque
 from scipy.spatial.transform import Rotation as R
-from magiclaw.configs import CameraConfig, DetectorConfig
+from magiclaw.config import CameraConfig, DetectorConfig
 
 
 class UsbCamera:
