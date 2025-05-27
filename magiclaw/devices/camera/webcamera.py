@@ -57,8 +57,17 @@ class WebCamera:
         # Set the detector parameters
         aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
         aruco_detector_params = cv2.aruco.DetectorParameters()
-        for attr, value in vars(detector_cfg):
-            aruco_detector_params.__setattr__(attr, value)
+        for attr, value in vars(detector_cfg).items():
+            if hasattr(aruco_detector_params, attr):
+                # Set the attribute if it exists in the DetectorParameters
+                if isinstance(value, (int, float, bool)):
+                    aruco_detector_params.__setattr__(attr, value)
+                elif isinstance(value, list):
+                    # Convert list to numpy array if needed
+                    aruco_detector_params.__setattr__(attr, np.array(value))
+            else:
+                # If the attribute does not exist, skip setting it
+                continue
         self.detector = cv2.aruco.ArucoDetector(aruco_dict, aruco_detector_params)
         self.aruco_estimate_params = cv2.aruco.EstimateParameters()
         self.aruco_estimate_params.solvePnPMethod = cv2.SOLVEPNP_IPPE_SQUARE

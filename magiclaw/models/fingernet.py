@@ -62,7 +62,7 @@ class FingerNet:
 
     def __init__(
         self, 
-        fingernet_cfg: FingerNetConfig = FingerNetConfig(),
+        fingernet_cfg: FingerNetConfig,
     ) -> None:
         """
         FingerNet initialization.

@@ -29,6 +29,7 @@ and <loop_rate> (default: 30) is the loop rate in Hz.
 import argparse
 import time
 import yaml
+import pathlib
 from .config import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig
 from .utils.process_utils import teleop_processes, standalone_processes
 from .utils.logging_utils import init_logger
@@ -63,26 +64,30 @@ class MagiClaw:
             raise ValueError(
                 "\033[31mInvalid mode! Must be 'teleop' or 'standalone'.\033[0m"
             )
+            
+        # Set root directory
+        self.root_dir = pathlib.Path(__file__).parent.parent
 
         # Initialize the logger
-        log_file_path = f"log/{time.strftime('%Y-%m-%d_%H-%M-%S')}.txt"
-        self.logger = init_logger(log_file_path)
+        log_file_path = self.root_dir.joinpath(f"log/{time.strftime('%Y-%m-%d_%H-%M-%S')}.txt")
+        self.logger = init_logger(str(log_file_path))
         self.logger.info(f"Starting MagiClaw with id={self.id}")
 
         # Load the parameters
         try:
-            with open(f"./configs/magiclaw_{self.id}.yaml", "r") as f:
+            magiclaw_config_path = self.root_dir.joinpath(f"configs/magiclaw_{self.id}.yaml")
+            with magiclaw_config_path.open("r") as f:
                 params = yaml.load(f, Loader=yaml.Loader)
                 
             self.claw_cfg = ClawConfig()
-            self.claw_cfg.read_config_file(params["claw"])
+            self.claw_cfg.read_config_file(params["claw"], root_dir=str(self.root_dir))
             self.zmq_cfg = ZMQConfig()
-            self.zmq_cfg.read_config_file(params["phone"])
+            self.zmq_cfg.read_config_file(params["phone"], root_dir=str(self.root_dir))
             self.camera_0_cfg = CameraConfig()
-            self.camera_0_cfg.read_config_file(params["camera_0"])
+            self.camera_0_cfg.read_config_file(params["camera_0"], root_dir=str(self.root_dir))
             self.camera_1_cfg = CameraConfig()
-            self.camera_1_cfg.read_config_file(params["camera_1"])
-            self.fingernet_cfg = FingerNetConfig(model_path=params["fingernet"])
+            self.camera_1_cfg.read_config_file(params["camera_1"], root_dir=str(self.root_dir))
+            self.fingernet_cfg = FingerNetConfig(model_path=str(self.root_dir.joinpath(params["fingernet"])))
         except FileNotFoundError as e:
             self.logger.error(f"Failed to load configuration file: {e}")
             raise e
@@ -90,7 +95,8 @@ class MagiClaw:
         # Load the bilateral parameters
         if self.mode == "teleop":
             try:
-                with open(f"./configs/bilateral.yaml", "r") as f:
+                bilateral_config_path = self.root_dir.joinpath(f"configs/bilateral.yaml")
+                with bilateral_config_path.open("r") as f:
                     bilateral_params = yaml.load(f, Loader=yaml.Loader)
                     self.zmq_cfg.set_bilateral_host(bilateral_params["host"])
             except FileNotFoundError as e:

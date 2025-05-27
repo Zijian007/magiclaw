@@ -13,13 +13,13 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fphone_msg.proto\x12\x05Phone\"y\n\x05Phone\x12\x11\n\ttimestamp\x18\x01 \x01(\x02\x12\x11\n\tcolor_img\x18\x02 \x01(\x0c\x12\x11\n\tdepth_img\x18\x03 \x03(\x05\x12\x13\n\x0b\x64\x65pth_width\x18\x04 \x01(\x05\x12\x14\n\x0c\x64\x65pth_height\x18\x05 \x01(\x05\x12\x0c\n\x04pose\x18\x06 \x03(\x02\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fphone_msg.proto\x12\x05Phone\"\x94\x01\n\x05Phone\x12\x11\n\ttimestamp\x18\x01 \x01(\x02\x12\x11\n\tcolor_img\x18\x02 \x01(\x0c\x12\x11\n\tdepth_img\x18\x03 \x03(\x02\x12\x13\n\x0b\x64\x65pth_width\x18\x04 \x01(\x05\x12\x14\n\x0c\x64\x65pth_height\x18\x05 \x01(\x05\x12\x12\n\nlocal_pose\x18\x06 \x03(\x02\x12\x13\n\x0bglobal_pose\x18\x07 \x03(\x02\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'phone_msg_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _PHONE._serialized_start=26
-  _PHONE._serialized_end=147
+  _PHONE._serialized_start=27
+  _PHONE._serialized_end=175
 # @@protoc_insertion_point(module_scope)

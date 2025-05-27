@@ -123,7 +123,7 @@ class PhoneSubscriber:
         print("Phone Subscriber Initialization Done.")
         print("{:-^80}".format(""))
 
-    def subscribeMessage(self, timeout: int = 1000) -> Tuple[bytes, np.ndarray, np.ndarray]:
+    def subscribeMessage(self, timeout: int = 100) -> Tuple[bytes, np.ndarray, np.ndarray]:
         """Subscribe the message.
 
         Args:

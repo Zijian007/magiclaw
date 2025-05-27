@@ -7,6 +7,7 @@ Detector configuration
 This module contains the configuration for the detector.
 """
 
+import os
 import yaml
 
 class DetectorConfig:
@@ -92,14 +93,16 @@ class DetectorConfig:
         self.minSideLengthCanonicalImg = minSideLengthCanonicalImg
         self.minMarkerLengthRatioOriginalImg = minMarkerLengthRatioOriginalImg
     
-    def read_config_file(self, file_path: str) -> None:
+    def read_config_file(self, file_path: str, root_dir: str = ".") -> None:
         """
         Read the camera configuration from a yaml file.
+        
         Args:
             file_path (str): The path to the yaml configuration file.
+            root_dir (str): The root directory to resolve relative paths.
         """
-        with open(file_path, "r") as file:
-            config = yaml.load(file, Loader=yaml.FullLoader)
+        with open(os.path.join(root_dir, file_path), "r") as f:
+            config = yaml.load(f, Loader=yaml.FullLoader)
 
             for key, value in config.items():
                 if hasattr(self, key):

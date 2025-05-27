@@ -98,10 +98,10 @@ def standalone_claw_process(
         logger.info(f"Claw {claw_cfg.claw_id} process terminated by user")
     except MemoryError:
         # Handle memory error
-        logger.error(f"Memory error in claw process, cleaning up...")
+        logger.error(f"Memory out, cleaning up...")
     except Exception as e:
         # Handle other exceptions
-        logger.error(f"Error in claw process: {str(e)}")
+        logger.error(f"Claw process: {str(e)}")
     finally:
         # Release claw resources
         claw.stop()
@@ -169,7 +169,7 @@ def bilateral_claw_process(
                 # Handle exception and log error
                 log_count += 1
                 if log_count == loop_rate:
-                    logger.error(f"Error in bilateral subscriber: {str(e)}")
+                    logger.warning(f"Bilateral subscriber: {str(e)}")
                     log_count = 0
                 # If no message is received, set default values
                 bilateral_motor_angle_percent = None
@@ -209,10 +209,10 @@ def bilateral_claw_process(
         logger.info(f"Claw {claw_cfg.claw_id} process terminated by user")
     except MemoryError:
         # Handle memory error
-        logger.error(f"Memory error in claw process, cleaning up...")
+        logger.error(f"Memory out, cleaning up...")
     except Exception as e:
         # Handle other exceptions
-        logger.error(f"Error in claw process: {str(e)}")
+        logger.error(f"Claw process: {str(e)}")
     finally:
         # Release claw resources
         claw.stop()
@@ -245,10 +245,6 @@ def finger_process(
     """
 
     print("{:=^80}".format(f" Finger {finger_index} Initialization "))
-
-    # Load detector parameters
-    with open(f"./configs/detector.yaml", "r") as f:
-        detector_params = yaml.load(f, Loader=yaml.Loader)
 
     # Initialize camera based on the mode
     if camera_cfg.mode == "usb":
@@ -318,9 +314,9 @@ def finger_process(
     except KeyboardInterrupt:
         logger.info(f"Finger {finger_index} process terminated by user")
     except MemoryError:
-        logger.error(f"Memory error in finger {finger_index} process, cleaning up...")
+        logger.error(f"Memory out, cleaning up...")
     except Exception as e:
-        logger.error(f"Error in finger {finger_index} process: {str(e)}")
+        logger.error(f"Finger {finger_index} process: {str(e)}")
     finally:
         # Release camera resources
         camera.release()
@@ -383,7 +379,8 @@ def publish_process(
                     motor_temperature,
                 ) = claw_subscriber.subscribeMessage()
             except Exception as e:
-                logger.error(f"Error in claw subscriber: {str(e)}")
+                if msg_count % (loop_rate * 2) == 0:
+                    logger.warning(f"Claw subscriber: {str(e)}")
                 claw_angle = 0.0
                 motor_angle = 0.0
                 motor_angle_percent = 0.0
@@ -397,7 +394,8 @@ def publish_process(
                     finger_0_subscriber.subscribeMessage()
                 )
             except Exception as e:
-                logger.error(f"Error in finger 0 subscriber: {str(e)}")
+                if msg_count % (loop_rate * 2) == 0:
+                    logger.warning(f"Finger 0 subscriber: {str(e)}")
                 img_0_bytes = b""
                 pose_0 = np.zeros(6, dtype=np.float32)
                 force_0 = np.zeros(6, dtype=np.float32)
@@ -409,7 +407,8 @@ def publish_process(
                     finger_1_subscriber.subscribeMessage()
                 )
             except Exception as e:
-                logger.error(f"Error in finger 1 subscriber: {str(e)}")
+                if msg_count % (loop_rate * 2) == 0:
+                    logger.warning(f"Finger 1 subscriber: {str(e)}")
                 img_1_bytes = b""
                 pose_1 = np.zeros(6, dtype=np.float32)
                 force_1 = np.zeros(6, dtype=np.float32)
@@ -424,11 +423,12 @@ def publish_process(
                     phone_depth_height,
                     phone_local_pose,
                     phone_global_pose,
-                ) = phone_subscriber.subscribeMessage()
+                ) = phone_subscriber.subscribeMessage(timeout=1)
             except Exception as e:
-                logger.error(f"Error in phone subscriber: {str(e)}")
+                if msg_count % (loop_rate * 2) == 0:
+                    logger.warning(f"Phone subscriber: {str(e)}")
                 phone_color_img_bytes = b""
-                phone_depth_img = np.zeros((480, 640), dtype=np.uint16)
+                phone_depth_img = np.zeros((156, 292), dtype=np.float32)
                 phone_depth_width = 0
                 phone_depth_height = 0
                 phone_local_pose = np.zeros(6, dtype=np.float32)
@@ -457,11 +457,8 @@ def publish_process(
                 phone_global_pose=phone_global_pose,
             )
 
-            # Increment the message count
-            msg_count += 1
-
             # Check resources every loop_rate * 2 messages
-            if msg_count >= loop_rate * 2:
+            if msg_count % (loop_rate * 2) == 0:
                 if check_system_resources(
                     logger=logger,
                     fps="%.2f" % (loop_rate * 2 / (time.time() - start_time)),
@@ -478,15 +475,18 @@ def publish_process(
                 start_time = time.time()
                 msg_count = 0
 
+            # Increment the message count
+            msg_count += 1
+            
             # Control loop rate
             time.sleep(max(0, 1.0 / loop_rate - 0.01))  # Small margin for processing
 
     except KeyboardInterrupt:
         logger.info("Publish process terminated by user")
     except MemoryError:
-        logger.error("Memory error in publish process, cleaning up...")
+        logger.error("Memory out, cleaning up...")
     except Exception as e:
-        logger.error(f"Error in publish process: {str(e)}")
+        logger.error(f"Publish process: {str(e)}")
     finally:
         # Close all ZMQ resources
         claw_subscriber.close()

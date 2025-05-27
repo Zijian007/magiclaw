@@ -1,6 +1,5 @@
 mode: web
 host: "192.168.4.45"
-port: 5555
 width: 320
 height: 240
 dist:
