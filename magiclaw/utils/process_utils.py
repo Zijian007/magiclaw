@@ -8,7 +8,6 @@ They can be combined to create a complete MagiClaw system in both standalone and
 """
 
 import time
-import yaml
 import cv2
 import multiprocessing
 import numpy as np
