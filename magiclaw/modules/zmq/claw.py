@@ -82,7 +82,7 @@ class ClawPublisher:
 
 
 class ClawSubscriber:
-    def __init__(self, host, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(self, host, port, hwm: int = 1, conflate: bool = True, timeout: int = 100) -> None:
         """Subscriber initialization.
 
         Args:
@@ -110,6 +110,7 @@ class ClawSubscriber:
         # Set poller
         self.poller = zmq.Poller()
         self.poller.register(self.subscriber, zmq.POLLIN)
+        self.socks = dict(self.poller.poll(timeout))
 
         # Init the message
         self.claw = claw_msg_pb2.Claw()
@@ -123,7 +124,7 @@ class ClawSubscriber:
         print("Claw Subscriber Initialization Done.")
         print("{:-^80}".format(""))
 
-    def subscribeMessage(self, timeout: int = 100) -> Tuple[float, float, float, int]:
+    def subscribeMessage(self) -> Tuple[float, float, float, int]:
         """Subscribe the message.
 
         Args:
@@ -137,8 +138,8 @@ class ClawSubscriber:
         """
 
         # Receive the message
-        socks = dict(self.poller.poll(timeout))
-        if self.subscriber in socks and socks[self.subscriber] == zmq.POLLIN:
+        
+        if self.subscriber in self.socks and self.socks[self.subscriber] == zmq.POLLIN:
             self.claw.ParseFromString(self.subscriber.recv())
         else:
             raise zmq.ZMQError("No message received within the timeout period.")

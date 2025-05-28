@@ -57,9 +57,6 @@ def standalone_claw_process(
     logger.info(f"Claw {claw_cfg.claw_id} process started")
 
     # Set the loop period
-    loop_start = time.time()
-    elapsed_time = 0.0
-    remaining_time = 0.0
     loop_rate = 200
 
     # Start the control loop
@@ -92,6 +89,8 @@ def standalone_claw_process(
             if remaining_time > 0:
                 time.sleep(remaining_time)
             loop_start = time.time()
+
+            del loop_start, elapsed_time, remaining_time
     except KeyboardInterrupt:
         # Handle keyboard interrupt
         logger.info(f"Claw {claw_cfg.claw_id} process terminated by user")
@@ -138,7 +137,7 @@ def bilateral_claw_process(
     # Initialize the publisher with high water mark to limit buffer
     claw_publisher = ClawPublisher(host=zmq_cfg.public_host, port=zmq_cfg.claw_port)
     bilateral_subscriber = ClawSubscriber(
-        host=zmq_cfg.bilateral_host, port=zmq_cfg.claw_port
+        host=zmq_cfg.bilateral_host, port=zmq_cfg.claw_port, timeout=5
     )
 
     print(f" MagiClaw {claw_cfg.claw_id} Initialization Done.")
@@ -148,9 +147,6 @@ def bilateral_claw_process(
     logger.info(f"Claw {claw_cfg.claw_id} process started")
 
     # Set the loop period
-    loop_start = time.time()
-    elapsed_time = 0.0
-    remaining_time = 0.0
     log_count = 0
     loop_rate = 200
 
@@ -162,7 +158,7 @@ def bilateral_claw_process(
             # Get bilateral motor status
             try:
                 _, _, bilateral_motor_angle_percent, bilateral_motor_speed, _, _ = (
-                    bilateral_subscriber.subscribeMessage(timeout=5)
+                    bilateral_subscriber.subscribeMessage()
                 )
             except Exception as e:
                 # Handle exception and log error
@@ -203,6 +199,9 @@ def bilateral_claw_process(
             remaining_time = max(0, (1.0 / loop_rate) - elapsed_time)
             if remaining_time > 0:
                 time.sleep(remaining_time)
+
+            # del bilateral_motor_angle_percent, bilateral_motor_speed
+            # del loop_start, elapsed_time, remaining_time
     except KeyboardInterrupt:
         # Handle keyboard interrupt
         logger.info(f"Claw {claw_cfg.claw_id} process terminated by user")
@@ -273,11 +272,6 @@ def finger_process(
     # JPEG compression - higher value = lower quality = less memory
     jpeg_params = [int(cv2.IMWRITE_JPEG_QUALITY), 50]
 
-    # Set the loop period
-    loop_start = time.time()
-    elapsed_time = 0.0
-    remaining_time = 0.0
-
     # Start the loop
     logger.info(f"Finger {finger_index} process started")
     try:
@@ -299,9 +293,9 @@ def finger_process(
             # Publish the data
             finger_publisher.publishMessage(
                 img_bytes=cv2.imencode(".jpg", img, jpeg_params)[1].tobytes(),
-                pose=pose_euler,
-                force=force,
-                node=node,
+                pose=pose_euler.flatten().tolist(),
+                force=force.flatten().tolist(),
+                node=node.flatten().tolist(),
             )
 
             # Fix the loop time
@@ -310,6 +304,9 @@ def finger_process(
             remaining_time = max(0, (1.0 / loop_rate) - elapsed_time)
             if remaining_time > 0:
                 time.sleep(remaining_time)
+
+            # del pose, img, pose_ref, pose_global, pose_euler, force, node
+            # del loop_start, elapsed_time, remaining_time
     except KeyboardInterrupt:
         logger.info(f"Finger {finger_index} process terminated by user")
     except MemoryError:
@@ -352,10 +349,30 @@ def publish_process(
     finger_1_subscriber = FingerSubscriber(
         host=zmq_cfg.public_host, port=zmq_cfg.finger_1_port
     )
-    phone_subscriber = PhoneSubscriber(host=zmq_cfg.phone_host, port=zmq_cfg.phone_port)
+    phone_subscriber = PhoneSubscriber(host=zmq_cfg.phone_host, port=zmq_cfg.phone_port, timeout=10)
     magiclaw_publisher = MagiClawPublisher(
         host=zmq_cfg.public_host, port=zmq_cfg.publish_port
     )
+
+    
+    default_finger_pose = np.zeros(6, dtype=np.float32).tolist()
+    default_finger_force = np.zeros(6, dtype=np.float32).tolist()
+    default_finger_node = np.zeros(6, dtype=np.float32).tolist()
+    default_finger_img_bytes = cv2.imencode(
+        ".jpg",
+        np.zeros((240, 320, 3), dtype=np.uint8),
+        [int(cv2.IMWRITE_JPEG_QUALITY), 50],
+    )[1].tobytes()
+    default_phone_color_img_bytes = cv2.imencode(
+        ".jpg",
+        np.zeros((480, 640, 3), dtype=np.uint8),
+        [int(cv2.IMWRITE_JPEG_QUALITY), 50],
+    )[1].tobytes()
+    default_phone_depth_img_bytes = cv2.imencode(
+        ".png", np.zeros((192, 256), dtype=np.uint16),
+    )[1].tobytes()
+    default_phone_local_pose = np.zeros(6, dtype=np.float32).tolist()
+    default_phone_global_pose = np.zeros(6, dtype=np.float32).tolist()
 
     print(" MagiClaw Publisher Initialization Done.")
     print("{:=^80}".format(""))
@@ -389,50 +406,49 @@ def publish_process(
 
             # Get finger 0 data
             try:
-                img_0_bytes, pose_0, force_0, node_0 = (
+                finger_0_img_bytes, finger_0_pose, finger_0_force, finger_0_node = (
                     finger_0_subscriber.subscribeMessage()
                 )
             except Exception as e:
                 if msg_count % (loop_rate * 2) == 0:
                     logger.warning(f"Finger 0 subscriber: {str(e)}")
-                img_0_bytes = b""
-                pose_0 = np.zeros(6, dtype=np.float32)
-                force_0 = np.zeros(6, dtype=np.float32)
-                node_0 = np.zeros(6, dtype=np.float32)
+                finger_0_img_bytes = default_finger_img_bytes
+                finger_0_pose = default_finger_pose
+                finger_0_force = default_finger_force
+                finger_0_node = default_finger_node
 
             # Get finger 1 data
             try:
-                img_1_bytes, pose_1, force_1, node_1 = (
+                finger_1_img_bytes, finger_1_pose, finger_1_force, finger_1_node = (
                     finger_1_subscriber.subscribeMessage()
                 )
             except Exception as e:
                 if msg_count % (loop_rate * 2) == 0:
                     logger.warning(f"Finger 1 subscriber: {str(e)}")
-                img_1_bytes = b""
-                pose_1 = np.zeros(6, dtype=np.float32)
-                force_1 = np.zeros(6, dtype=np.float32)
-                node_1 = np.zeros(6, dtype=np.float32)
+                finger_1_img_bytes = default_finger_img_bytes
+                finger_1_pose = default_finger_pose
+                finger_1_force = default_finger_force
+                finger_1_node = default_finger_node
 
             # Get phone data
             try:
                 (
                     phone_color_img_bytes,
-                    phone_depth_img,
+                    phone_depth_img_bytes,
                     phone_depth_width,
                     phone_depth_height,
                     phone_local_pose,
                     phone_global_pose,
-                ) = phone_subscriber.subscribeMessage(timeout=1)
+                ) = phone_subscriber.subscribeMessage()
             except Exception as e:
                 if msg_count % (loop_rate * 2) == 0:
                     logger.warning(f"Phone subscriber: {str(e)}")
-                phone_color_img_bytes = b""
-                phone_depth_img = np.zeros((156, 292), dtype=np.float32)
-                phone_depth_width = 0
-                phone_depth_height = 0
-                phone_local_pose = np.zeros(6, dtype=np.float32)
-                phone_global_pose = np.zeros(6, dtype=np.float32)
-
+                phone_color_img_bytes = default_phone_color_img_bytes
+                phone_depth_img_bytes = default_phone_depth_img_bytes
+                phone_depth_width = 256
+                phone_depth_height = 192
+                phone_local_pose = default_phone_local_pose
+                phone_global_pose = default_phone_global_pose
             # Publish the data
             magiclaw_publisher.publishMessage(
                 claw_angle=claw_angle,
@@ -440,16 +456,16 @@ def publish_process(
                 motor_speed=motor_speed,
                 motor_iq=motor_iq,
                 motor_temperature=motor_temperature,
-                img_0_bytes=img_0_bytes,
-                pose_0=pose_0,
-                force_0=force_0,
-                node_0=node_0,
-                img_1_bytes=img_1_bytes,
-                pose_1=pose_1,
-                force_1=force_1,
-                node_1=node_1,
+                finger_0_img_bytes=finger_0_img_bytes,
+                finger_0_pose=finger_0_pose,
+                finger_0_force=finger_0_force,
+                finger_0_node=finger_0_node,
+                finger_1_img_bytes=finger_1_img_bytes,
+                finger_1_pose=finger_1_pose,
+                finger_1_force=finger_1_force,
+                finger_1_node=finger_1_node,
                 phone_color_img_bytes=phone_color_img_bytes,
-                phone_depth_img=phone_depth_img,
+                phone_depth_img_bytes=phone_depth_img_bytes,
                 phone_depth_width=phone_depth_width,
                 phone_depth_height=phone_depth_height,
                 phone_local_pose=phone_local_pose,
@@ -465,20 +481,34 @@ def publish_process(
                     logger.warning(
                         "System resources critical in publish process, stopping"
                     )
-                    # Explicitly clean up
-                    claw_subscriber.close()
-                    finger_0_subscriber.close()
-                    finger_1_subscriber.close()
-                    magiclaw_publisher.close()
                     return
                 start_time = time.time()
                 msg_count = 0
 
             # Increment the message count
             msg_count += 1
-            
+
             # Control loop rate
             time.sleep(max(0, 1.0 / loop_rate - 0.01))  # Small margin for processing
+
+            # del (
+            #     claw_angle,
+            #     motor_angle,
+            #     motor_angle_percent,
+            #     motor_speed,
+            #     motor_iq,
+            #     motor_temperature,
+            # )
+            # del finger_0_img_bytes, finger_0_pose, finger_0_force, finger_0_node
+            # del finger_1_img_bytes, finger_1_pose, finger_1_force, finger_1_node
+            # del (
+            #     phone_color_img_bytes,
+            #     phone_depth_img_bytes,
+            #     phone_depth_width,
+            #     phone_depth_height,
+            #     phone_local_pose,
+            #     phone_global_pose,
+            # )
 
     except KeyboardInterrupt:
         logger.info("Publish process terminated by user")
@@ -491,6 +521,7 @@ def publish_process(
         claw_subscriber.close()
         finger_0_subscriber.close()
         finger_1_subscriber.close()
+        phone_subscriber.close()
         magiclaw_publisher.close()
         return
 

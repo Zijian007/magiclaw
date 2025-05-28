@@ -47,11 +47,11 @@ class PhonePublisher:
     def publishMessage(
         self,
         color_img_bytes: bytes = b"",
-        depth_img: np.ndarray = np.array([]),
-        depth_width: int = 0,
-        depth_height: int = 0,
-        local_pose: np.ndarray = np.array([]),
-        global_pose: np.ndarray = np.array([]),
+        depth_img_bytes: bytes = b"",
+        depth_width: int = 256,
+        depth_height: int = 192,
+        local_pose: list = np.zeros(6, dtype=np.float32).tolist(),
+        global_pose: list = np.zeros(6, dtype=np.float32).tolist(),
     ) -> None:
         """Publish the message.
 
@@ -64,7 +64,7 @@ class PhonePublisher:
         # Set the message
         self.phone.timestamp = datetime.now().timestamp()
         self.phone.color_img = color_img_bytes
-        self.phone.depth_img[:] = depth_img.flatten().tolist()
+        self.phone.depth_img = depth_img_bytes
         self.phone.depth_width = depth_width
         self.phone.depth_height = depth_height
         self.phone.local_pose[:] = local_pose.flatten().tolist()
@@ -82,7 +82,7 @@ class PhonePublisher:
 
 
 class PhoneSubscriber:
-    def __init__(self, host, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(self, host, port, hwm: int = 1, conflate: bool = True, timeout: int = 100) -> None:
         """Subscriber initialization.
 
         Args:
@@ -110,6 +110,7 @@ class PhoneSubscriber:
         # Set poller
         self.poller = zmq.Poller()
         self.poller.register(self.subscriber, zmq.POLLIN)
+        self.socks = dict(self.poller.poll(timeout))
 
         # Init the message
         self.phone = phone_msg_pb2.Phone()
@@ -123,7 +124,7 @@ class PhoneSubscriber:
         print("Phone Subscriber Initialization Done.")
         print("{:-^80}".format(""))
 
-    def subscribeMessage(self, timeout: int = 100) -> Tuple[bytes, np.ndarray, np.ndarray]:
+    def subscribeMessage(self) -> Tuple[bytes, list, int, int, list, list]:
         """Subscribe the message.
 
         Args:
@@ -132,29 +133,30 @@ class PhoneSubscriber:
         Returns:
             color_img: The image captured by the camera.
             depth_img: The depth image captured by the camera.
-            pose: The pose of the marker (numpy array).
+            depth_width: The width of the depth image.
+            depth_height: The height of the depth image.
+            local_pose: The local pose of the phone.
+            global_pose: The global pose of the phone.
 
         Raises:
             zmq.ZMQError: If no message is received within the timeout period.
         """
 
         # Receive the message
-        socks = dict(self.poller.poll(timeout))
-        if self.subscriber in socks and socks[self.subscriber] == zmq.POLLIN:
+        
+        if self.subscriber in self.socks and self.socks[self.subscriber] == zmq.POLLIN:
             msg = self.subscriber.recv()
-            print("Message received.")
-            print(msg)
             # Parse the message
             self.phone.ParseFromString(msg)
         else:
             raise zmq.ZMQError("No message received within the timeout period.")
         return (
             self.phone.color_img,
-            np.array(self.phone.depth_img).reshape(
-                self.phone.depth_height, self.phone.depth_width
-            ),
-            np.array(self.phone.local_pose),
-            np.array(self.phone.global_pose),
+            self.phone.depth_img,
+            self.phone.depth_width,
+            self.phone.depth_height,
+            self.phone.local_pose,
+            self.phone.global_pose,
         )
 
     def close(self):

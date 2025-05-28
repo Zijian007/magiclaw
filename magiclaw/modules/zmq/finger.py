@@ -47,9 +47,9 @@ class FingerPublisher:
     def publishMessage(
         self,
         img_bytes: bytes = b"",
-        pose: np.ndarray = np.array([]),
-        force: np.ndarray = np.array([]),
-        node: np.ndarray = np.array([]),
+        pose: list = np.zeros(6, dtype=np.float32).tolist(),
+        force: list = np.zeros(6, dtype=np.float32).tolist(),
+        node: list = np.zeros(6, dtype=np.float32).tolist(),
     ) -> None:
         """Publish the message.
 
@@ -63,9 +63,9 @@ class FingerPublisher:
         # Set the message
         self.finger.timestamp = datetime.now().timestamp()
         self.finger.img = img_bytes
-        self.finger.pose[:] = pose.flatten().tolist()
-        self.finger.force[:] = force.flatten().tolist()
-        self.finger.node[:] = node.flatten().tolist()
+        self.finger.pose[:] = pose
+        self.finger.force[:] = force
+        self.finger.node[:] = node
 
         # Publish the message
         self.publisher.send(self.finger.SerializeToString())
@@ -79,7 +79,7 @@ class FingerPublisher:
 
 
 class FingerSubscriber:
-    def __init__(self, host, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(self, host, port, hwm: int = 1, conflate: bool = True, timeout: int = 100) -> None:
         """Subscriber initialization.
 
         Args:
@@ -107,6 +107,7 @@ class FingerSubscriber:
         # Set poller
         self.poller = zmq.Poller()
         self.poller.register(self.subscriber, zmq.POLLIN)
+        self.socks = dict(self.poller.poll(timeout))
 
         # Init the message
         self.finger = finger_msg_pb2.Finger()
@@ -120,7 +121,7 @@ class FingerSubscriber:
         print("Finger Subscriber Initialization Done.")
         print("{:-^80}".format(""))
 
-    def subscribeMessage(self, timeout: int = 100) -> Tuple[bytes, np.ndarray, np.ndarray, np.ndarray]:
+    def subscribeMessage(self) -> Tuple[bytes, np.ndarray, np.ndarray, np.ndarray]:
         """Subscribe the message.
 
         Args:
@@ -137,16 +138,16 @@ class FingerSubscriber:
         """
 
         # Receive the message
-        socks = dict(self.poller.poll(timeout))
-        if self.subscriber in socks and socks[self.subscriber] == zmq.POLLIN:
+        
+        if self.subscriber in self.socks and self.socks[self.subscriber] == zmq.POLLIN:
             self.finger.ParseFromString(self.subscriber.recv())
         else:
             raise zmq.ZMQError("No message received within the timeout period.")
         return (
             self.finger.img,
-            np.array(self.finger.pose),
-            np.array(self.finger.force),
-            np.array(self.finger.node),
+            self.finger.pose,
+            self.finger.force,
+            self.finger.node,
         )
 
     def close(self):

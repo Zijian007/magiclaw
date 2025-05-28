@@ -2,7 +2,6 @@
 
 import argparse
 import os
-import yaml
 from magiclaw.modules.zmq import PhoneSubscriber
 from magiclaw.config import ZMQConfig
 
@@ -24,14 +23,13 @@ def phone_test(params_path: str, headless: bool = False, save_images: bool = Fal
         save_images (bool): Save phone frames as images.
     """
 
-    # Initialize phone
-    with open(params_path, "r") as f:
-        phone_params = yaml.load(f.read(), Loader=yaml.Loader)   
+    zmq_config = ZMQConfig()
+    zmq_config.read_config_file(params_path)
 
     # Create a PhonePublisher instance
     phone_subscriber = PhoneSubscriber(
-        ip=phone_params["ip"],
-        port=phone_params["port"],
+        host=zmq_config.phone_host,
+        port=zmq_config.phone_port,
     )
     
     
@@ -39,20 +37,20 @@ def phone_test(params_path: str, headless: bool = False, save_images: bool = Fal
     depth_img_list = []
     try:
         while True:
-            color_img, depth_img, pose = phone_subscriber.subscribeMessage()
-            if color_img is not None:
-                # Display the color image
-                cv2.imshow("Color Image", color_img)
-                if save_images:
-                    color_img_list.append(color_img)
-            if depth_img is not None:
-                # Display the depth image
-                cv2.imshow("Depth Image", depth_img)
-                if save_images:
-                    depth_img_list.append(depth_img)
-            if pose is not None:
+            color_img, depth_img, depth_width, depth_height, local_pose, global_pose = phone_subscriber.subscribeMessage(timeout=1000)
+            # if color_img is not None:
+            #     # Display the color image
+            #     cv2.imshow("Color Image", color_img)
+            #     if save_images:
+            #         color_img_list.append(color_img)
+            # if depth_img is not None:
+            #     # Display the depth image
+            #     cv2.imshow("Depth Image", depth_img)
+            #     if save_images:
+            #         depth_img_list.append(depth_img)
+            if global_pose is not None:
                 # Display the pose
-                print(f"Pose: {pose}")
+                print(f"Pose: {global_pose}")
     except KeyboardInterrupt:
         print("Exiting...")
     # Release resources

@@ -57,20 +57,20 @@ class MagiClawPublisher:
         motor_speed: float = 0.0,
         motor_iq: float = 0.0,
         motor_temperature: int = 0,
-        img_0_bytes: bytes = b"",
-        pose_0: np.ndarray = np.array([]),
-        force_0: np.ndarray = np.array([]),
-        node_0: np.ndarray = np.array([]),
-        img_1_bytes: np.ndarray = b"",
-        pose_1: np.ndarray = np.array([]),
-        force_1: np.ndarray = np.array([]),
-        node_1: np.ndarray = np.array([]),
+        finger_0_img_bytes: bytes = b"",
+        finger_0_pose: list = np.zeros(6, dtype=np.float32).tolist(),
+        finger_0_force: list = np.zeros(6, dtype=np.float32).tolist(),
+        finger_0_node: list = np.zeros(6, dtype=np.float32).tolist(),
+        finger_1_img_bytes: np.ndarray = b"",
+        finger_1_pose: list = np.zeros(6, dtype=np.float32).tolist(),
+        finger_1_force: list = np.zeros(6, dtype=np.float32).tolist(),
+        finger_1_node: list = np.zeros(6, dtype=np.float32).tolist(),
         phone_color_img_bytes: bytes = b"",
-        phone_depth_img: np.ndarray = np.array([]),
+        phone_depth_img_bytes: bytes = b"",
         phone_depth_width: int = 0,
         phone_depth_height: int = 0,
-        phone_local_pose: np.ndarray = np.array([]),
-        phone_global_pose: np.ndarray = np.array([]),
+        phone_local_pose: list = np.zeros(6, dtype=np.float32).tolist(),
+        phone_global_pose: list = np.zeros(6, dtype=np.float32).tolist(),
     ) -> None:
         """Publish the message.
 
@@ -88,20 +88,20 @@ class MagiClawPublisher:
         self.magiclaw.claw.motor.speed = motor_speed
         self.magiclaw.claw.motor.iq = motor_iq
         self.magiclaw.claw.motor.temperature = motor_temperature
-        self.magiclaw.finger_0.img = img_0_bytes
-        self.magiclaw.finger_0.pose[:] = pose_0.flatten().tolist()
-        self.magiclaw.finger_0.force[:] = force_0.flatten().tolist()
-        self.magiclaw.finger_0.node[:] = node_0.flatten().tolist()
-        self.magiclaw.finger_1.img = img_1_bytes
-        self.magiclaw.finger_1.pose[:] = pose_1.flatten().tolist()
-        self.magiclaw.finger_1.force[:] = force_1.flatten().tolist()
-        self.magiclaw.finger_1.node[:] = node_1.flatten().tolist()
+        self.magiclaw.finger_0.img = finger_0_img_bytes
+        self.magiclaw.finger_0.pose[:] = finger_0_pose
+        self.magiclaw.finger_0.force[:] = finger_0_force
+        self.magiclaw.finger_0.node[:] = finger_0_node
+        self.magiclaw.finger_1.img = finger_1_img_bytes
+        self.magiclaw.finger_1.pose[:] = finger_1_pose
+        self.magiclaw.finger_1.force[:] = finger_1_force
+        self.magiclaw.finger_1.node[:] = finger_1_node
         self.magiclaw.phone.color_img = phone_color_img_bytes
-        self.magiclaw.phone.depth_img[:] = phone_depth_img.flatten().tolist()
+        self.magiclaw.phone.depth_img = phone_depth_img_bytes
         self.magiclaw.phone.depth_width = phone_depth_width
         self.magiclaw.phone.depth_height = phone_depth_height
-        self.magiclaw.phone.local_pose[:] = phone_local_pose.flatten().tolist()
-        self.magiclaw.phone.global_pose[:] = phone_global_pose.flatten().tolist()
+        self.magiclaw.phone.local_pose[:] = phone_local_pose
+        self.magiclaw.phone.global_pose[:] = phone_global_pose
         
         # Publish the message
         self.publisher.send(self.magiclaw.SerializeToString())
@@ -194,9 +194,7 @@ class MagiClawSubscriber:
         finger_1_force = np.array(self.magiclaw.finger_1.force)
         finger_1_node = np.array(self.magiclaw.finger_1.node).reshape(-1, 3)
         phone_color_img = self.magiclaw.phone.color_img
-        phone_depth_img = np.array(self.magiclaw.phone.depth_img).reshape(
-            self.magiclaw.phone.depth_height, self.magiclaw.phone.depth_width
-        )
+        phone_depth_img = self.magiclaw.phone.depth_img
         phone_local_pose = np.array(self.magiclaw.phone.local_pose)
         phone_global_pose = np.array(self.magiclaw.phone.global_pose)
         
