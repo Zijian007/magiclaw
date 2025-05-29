@@ -23,7 +23,8 @@ class MotorConfig:
         bus_channel: str = "can0",
         Kp_s: float = 2.0e-5,
         Kp_b: float = 5.0e-4,
-        Kd: float = 5.0e-4,
+        Kd_s: float = 2.0e-4,
+        Kd_b: float = 5.0e-4,
         iq_max: float = 10.0,
         angle_range: float = 360.0,
     ) -> None:
@@ -45,7 +46,8 @@ class MotorConfig:
         self.bus_channel = bus_channel
         self.Kp_s = Kp_s
         self.Kp_b = Kp_b
-        self.Kd = Kd
+        self.Kd_s = Kd_s
+        self.Kd_b = Kd_b
         self.iq_max = iq_max
         self.angle_range = angle_range
         

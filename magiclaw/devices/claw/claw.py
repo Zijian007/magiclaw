@@ -310,7 +310,8 @@ class Claw:
         self.torque_control(iq)
 
     def bilateral_control(
-        self, bilateral_angle: float = 0.0, bilateral_speed: float = 0.0
+        self, bilateral_motor_angle_percent: float,
+        bilateral_motor_speed: float,
     ) -> None:
         """
         Bilateral control.
@@ -329,18 +330,26 @@ class Claw:
         # Read the motor status
         self.read_motor_status()
 
-        # Calculate the error
-        angle_error = (self.motor_angle - bilateral_angle) * 100.0
-        speed_error = self.motor_speed - bilateral_speed
-
-        # Apply deadband
-        if abs(angle_error) < self.motor_angle_deadband:
-            angle_error = 0
-        if abs(speed_error) < self.motor_speed_deadband:
-            speed_error = 0
+        # Check if bilateral angle and speed are valid
+        if bilateral_motor_angle_percent is None or bilateral_motor_speed is None:
+            bilateral_angle_error = 0
+            bilateral_speed_error = 0
+        else:
+            # Convert the bilateral angle percent to the motor angle
+            bilateral_motor_angle = (
+                self.motor_angle_range * bilateral_motor_angle_percent
+            )
+            # Calculate the error
+            bilateral_angle_error = (self.motor_angle - bilateral_motor_angle) * 100.0
+            bilateral_speed_error = self.motor_speed - bilateral_motor_speed
+            # Apply deadband
+            if abs(bilateral_angle_error) < self.motor_angle_deadband:
+                bilateral_angle_error = 0
+            if abs(bilateral_speed_error) < self.motor_speed_deadband:
+                bilateral_speed_error = 0
 
         # Calculate the target current
-        iq = -self.Kp_b * angle_error - self.Kd_b * speed_error
+        iq = -self.Kp_b * bilateral_angle_error - self.Kd_b * bilateral_speed_error
 
         # Limit the target current
         iq = max(min(iq, self.iq_max), -self.iq_max)
@@ -396,7 +405,7 @@ class Claw:
             # target_angle_error = (self.motor_angle - target_angle) * 100.0
             target_angle_error = 10000
         elif self.mode == "follower":
-            target_angle_error = 0
+            target_angle_error = 10000
         else:
             raise ValueError(
                 f"Invalid mode: {self.mode}. The mode should be \"leader\" or \"follower\"."

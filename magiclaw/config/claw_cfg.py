@@ -54,9 +54,10 @@ class ClawConfig:
         self.motor_id = motor_config.id
         self.bus_interface = motor_config.bus_interface
         self.bus_channel = motor_config.bus_channel
-        self.Kp_s = motor_config.Kp_s
         self.Kp_b = motor_config.Kp_b
-        self.Kd = motor_config.Kd
+        self.Kp_s = motor_config.Kp_s
+        self.Kd_b = motor_config.Kd_b
+        self.Kd_s = motor_config.Kd_s
         self.iq_max = motor_config.iq_max
         self.angle_range = motor_config.angle_range
         self.motor_angle_deadband = motor_config.angle_deadband
