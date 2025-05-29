@@ -403,9 +403,9 @@ class Claw:
         if self.mode == "leader":
             # Spring damping control
             # target_angle_error = (self.motor_angle - target_angle) * 100.0
-            target_angle_error = 10000
+            target_angle_error = 15000
         elif self.mode == "follower":
-            target_angle_error = 10000
+            target_angle_error = 0
         else:
             raise ValueError(
                 f"Invalid mode: {self.mode}. The mode should be \"leader\" or \"follower\"."

@@ -35,7 +35,7 @@ parser = argparse.ArgumentParser(description="Calibrate the claw.")
 parser.add_argument(
     "--id",
     type=int,
-    default=1,
+    default=0,
     help="ID of the claw to calibrate (default: 0)",
 )
 args = parser.parse_args()
