@@ -35,7 +35,7 @@ parser = argparse.ArgumentParser(description="Calibrate the claw.")
 parser.add_argument(
     "--id",
     type=int,
-    default=0,
+    default=1,
     help="ID of the claw to calibrate (default: 0)",
 )
 args = parser.parse_args()
@@ -103,11 +103,11 @@ print(f"Angle range: {angle_range:.2f} degrees")
 claw_cfg.angle_range = round(angle_range, 2)
 
 # Save the updated configuration file
-with open(f"configs/claw/claw_{args.id}.yaml", "w") as f:
-    # find the line with "angle_range"
-    lines = f.readlines()
-    for i, line in enumerate(lines):
-        if "angle_range" in line:
-            lines[i] = f"  angle_range: {claw_cfg.angle_range}\n"
-            break
+# with open(f"configs/claw/claw_{args.id}.yaml", "w") as f:
+#     # find the line with "angle_range"
+#     lines = f.readlines()
+#     for i, line in enumerate(lines):
+#         if "angle_range" in line:
+#             lines[i] = f"  angle_range: {claw_cfg.angle_range}\n"
+#             break
 print("The configuration file has been updated.")

@@ -70,18 +70,7 @@ class Claw:
         """Claw initialization.
 
         Args:
-            claw_id (int): The ID of the claw.
-            bus_interface (str): The bus interface.
-            bus_channel (str): The bus channel.
-            motor_id (int): The motor ID.
-            Kp (float): The proportional gain of the PID controller.
-            Kd (float): The derivative gain of the PID controller.
-            iq_max (float): The maximum current.
-            angle_range (float): The motor angle range in degrees.
-            lead (float): The lead of the screw.
-            gear_radius (float): The radius of the gear.
-            motor_angle_deadband (int): The deadband of the motor angle in 0.01 degrees.
-            motor_speed_deadband (int): The deadband of the motor speed in dps.
+            claw_cfg (ClawConfig): The configuration for the claw.
             mode (str): The mode of the claw, which can be "leader", "follower", or "standalone".
         Raises:
             ValueError: If the bus interface is not valid or the motor ID is not valid.
@@ -104,7 +93,8 @@ class Claw:
         self.motor_id = claw_cfg.motor_id
         self.Kp_b = claw_cfg.Kp_b
         self.Kp_s = claw_cfg.Kp_s
-        self.Kd = claw_cfg.Kd
+        self.Kd_b = claw_cfg.Kd_b
+        self.Kd_s = claw_cfg.Kd_s
         self.iq_max = claw_cfg.iq_max
         self.motor_angle_offset = 0
         self.motor_angle = 0
@@ -131,7 +121,8 @@ class Claw:
         print(f"Motor ID: {self.motor_id}")
         print(f"Kp_b: {self.Kp_b}")
         print(f"Kp_s: {self.Kp_s}")
-        print(f"Kd: {self.Kd}")
+        print(f"Kd_b: {self.Kd_b}")
+        print(f"Kd_s: {self.Kd_s}")
         print(f"Max IQ: {self.iq_max} A")
 
         # Set motor to the initial position
@@ -295,7 +286,7 @@ class Claw:
         balance at the target angle when there is external force.
         Kp is the proportional gain and Kd is the derivative gain.
         The target current is calculated by the following formula:
-        iq = -Kp_s * error - Kd * speed
+        iq = -Kp_s * error - Kd_s * speed
         and then limited by the maximum current.
 
         Args:
@@ -306,10 +297,11 @@ class Claw:
         self.read_motor_status()
 
         # Calculate the error
-        error = (self.motor_angle - target_angle) * 100.0
+        # error = (self.motor_angle - target_angle) * 100.0
+        error = 10000  # Always try to balance at the target angle
 
         # Calculate the target current
-        iq = -self.Kp_s * error - self.Kd * self.motor_speed
+        iq = -self.Kp_s * error - self.Kd_s * self.motor_speed
 
         # Limit the target current
         iq = max(min(iq, self.iq_max), -self.iq_max)
@@ -326,7 +318,7 @@ class Claw:
         This method is used to control the two motors keeping
         the same angle and speed. The target current is calculated
         by the following formula:
-        iq = -Kp_b * angle_error - Kd * speed_error
+        iq = -Kp_b * angle_error - Kd_b * speed_error
         and then limited by the maximum current.
 
         Args:
@@ -348,7 +340,7 @@ class Claw:
             speed_error = 0
 
         # Calculate the target current
-        iq = -self.Kp_b * angle_error - self.Kd * speed_error
+        iq = -self.Kp_b * angle_error - self.Kd_b * speed_error
 
         # Limit the target current
         iq = max(min(iq, self.iq_max), -self.iq_max)
@@ -369,7 +361,7 @@ class Claw:
         the same angle and speed, and also automatically balance
         at the target angle when there is external force. The
         target current is calculated by the following formula:
-        iq = - Kp_b * biliteral_angle_error - Kd * biliteral_speed_error - Kp_s * target_angle_error
+        iq = - Kp_b * biliteral_angle_error - Kd_b * biliteral_speed_error - Kp_s * target_angle_error
         and then limited by the maximum current.
 
         Args:
@@ -401,7 +393,8 @@ class Claw:
 
         if self.mode == "leader":
             # Spring damping control
-            target_angle_error = (self.motor_angle - target_angle) * 100.0
+            # target_angle_error = (self.motor_angle - target_angle) * 100.0
+            target_angle_error = 10000
         elif self.mode == "follower":
             target_angle_error = 0
         else:
@@ -412,7 +405,7 @@ class Claw:
         # Calculate the target current
         iq = (
             -self.Kp_b * bilateral_angle_error
-            - self.Kd * bilateral_speed_error
+            - self.Kd_b * bilateral_speed_error
             - self.Kp_s * target_angle_error
         )
 
