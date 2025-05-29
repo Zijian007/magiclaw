@@ -107,7 +107,7 @@ class FingerSubscriber:
         # Set poller
         self.poller = zmq.Poller()
         self.poller.register(self.subscriber, zmq.POLLIN)
-        self.socks = dict(self.poller.poll(timeout))
+        self.timeout = timeout
 
         # Init the message
         self.finger = finger_msg_pb2.Finger()
@@ -139,7 +139,7 @@ class FingerSubscriber:
 
         # Receive the message
         
-        if self.subscriber in self.socks and self.socks[self.subscriber] == zmq.POLLIN:
+        if self.poller.poll(self.timeout):
             self.finger.ParseFromString(self.subscriber.recv())
         else:
             raise zmq.ZMQError("No message received within the timeout period.")

@@ -137,7 +137,7 @@ def bilateral_claw_process(
     # Initialize the publisher with high water mark to limit buffer
     claw_publisher = ClawPublisher(host=zmq_cfg.public_host, port=zmq_cfg.claw_port)
     bilateral_subscriber = ClawSubscriber(
-        host=zmq_cfg.bilateral_host, port=zmq_cfg.claw_port, timeout=5
+        host=zmq_cfg.bilateral_host, port=zmq_cfg.claw_port, timeout=100
     )
 
     print(f" MagiClaw {claw_cfg.claw_id} Initialization Done.")
