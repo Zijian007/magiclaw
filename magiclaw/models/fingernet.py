@@ -142,4 +142,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Initialize the FingerNet
-    finger_net = FingerNet(args.name, args.model_path)
+    fingernet_cfg = FingerNetConfig(
+        name=args.name,
+        model_path=args.model_path,
+        device="auto"
+    )
+    finger_net = FingerNet(fingernet_cfg)

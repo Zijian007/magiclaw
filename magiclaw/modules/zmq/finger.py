@@ -142,7 +142,7 @@ class FingerSubscriber:
         if self.poller.poll(self.timeout):
             self.finger.ParseFromString(self.subscriber.recv())
         else:
-            raise zmq.ZMQError("No message received within the timeout period.")
+            raise RuntimeError("No message received within the timeout period.")
         return (
             self.finger.img,
             self.finger.pose,

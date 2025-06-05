@@ -7,6 +7,8 @@ FingerNet configuration
 This module contains the configuration for the FingerNet model.
 """
 
+from typing import Optional
+
 class FingerNetConfig:
     """
     FingerNet configuration class.
@@ -20,7 +22,7 @@ class FingerNetConfig:
     def __init__(
         self,
         name: str = "FingerNet",
-        model_path: str = None,
+        model_path: Optional[str] = None,
         device: str = "auto",
     ) -> None:
         """

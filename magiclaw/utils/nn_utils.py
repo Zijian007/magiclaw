@@ -25,7 +25,12 @@ def init_model(model_path: str, device: str = "auto") -> ort.InferenceSession:
     if not os.path.exists(model_path):
         raise ValueError("\033[31mThe model path does not exist\033[0m")
 
-    return ort.InferenceSession(model_path, providers=[get_provider(device)])
+    sess_options = ort.SessionOptions()
+    sess_options.intra_op_num_threads = 1
+    sess_options.inter_op_num_threads = 1
+    sess_options.log_severity_level = 3
+
+    return ort.InferenceSession(model_path, sess_options, providers=[get_provider(device)])
 
 def get_provider(devices: str = "auto") -> str:
     """

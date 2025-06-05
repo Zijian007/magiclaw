@@ -7,7 +7,7 @@ from magiclaw.modules.protobuf import cam_msg_pb2
 
 
 class CameraSubscriber:
-    def __init__(self, host, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(self, host, port, hwm: int = 1, conflate: bool = True, timeout: int = 1000) -> None:
         """Subscriber initialization.
 
         Args:
@@ -34,6 +34,7 @@ class CameraSubscriber:
         # Use poller to implement timeout
         self.poller = zmq.Poller()
         self.poller.register(self.subscriber, zmq.POLLIN)
+        self.timeout = timeout
 
         # Init the message
         self.cam = cam_msg_pb2.Camera()
@@ -44,7 +45,7 @@ class CameraSubscriber:
 
         print("Camera Subscriber Initialization Done.")
 
-    def subscribeMessage(self, timeout=2000) -> bytes:
+    def subscribeMessage(self) -> np.ndarray:
         """Subscribe the message.
 
         Args:
@@ -57,7 +58,7 @@ class CameraSubscriber:
             zmq.ZMQError: If no message is received within the timeout period.
         """
         # Wait for message with timeout
-        if self.poller.poll(timeout):
+        if self.poller.poll(self.timeout):
             # Receive the message
             self.cam.ParseFromString(self.subscriber.recv())
             return np.frombuffer(self.cam.img, dtype=np.uint8)
