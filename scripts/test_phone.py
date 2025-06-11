@@ -30,6 +30,8 @@ def phone_test(params_path: str, headless: bool = False, save_images: bool = Fal
     zmq_config.read_config_file(params_path)
 
     # Create a PhonePublisher instance
+    if zmq_config.phone_host is None:
+        raise ValueError("Phone host is not set in the configuration file.")
     phone_subscriber = PhoneSubscriber(
         host=zmq_config.phone_host,
         port=zmq_config.phone_port,
