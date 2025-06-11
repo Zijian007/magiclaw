@@ -8,7 +8,9 @@ from magiclaw.modules.protobuf import phone_msg_pb2
 
 
 class PhonePublisher:
-    def __init__(self, host, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(
+        self, host: str, port: str, hwm: int = 1, conflate: bool = True
+    ) -> None:
         """Publisher initialization.
 
         Args:
@@ -67,8 +69,8 @@ class PhonePublisher:
         self.phone.depth_img = depth_img_bytes
         self.phone.depth_width = depth_width
         self.phone.depth_height = depth_height
-        self.phone.local_pose[:] = local_pose.flatten().tolist()
-        self.phone.global_pose[:] = global_pose.flatten().tolist()
+        self.phone.local_pose[:] = local_pose
+        self.phone.global_pose[:] = global_pose
 
         # Publish the message
         self.publisher.send(self.phone.SerializeToString())
@@ -82,7 +84,14 @@ class PhonePublisher:
 
 
 class PhoneSubscriber:
-    def __init__(self, host, port, hwm: int = 1, conflate: bool = True, timeout: int = 100) -> None:
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        hwm: int = 1,
+        conflate: bool = True,
+        timeout: int = 100,
+    ) -> None:
         """Subscriber initialization.
 
         Args:
@@ -90,6 +99,7 @@ class PhoneSubscriber:
             port (int): The port number of the subscriber.
             hwm (int): High water mark for the subscriber. Default is 1.
             conflate (bool): Whether to conflate messages. Default is True.
+            timeout (int): Maximum time to wait for a message in milliseconds. Default is 100 ms.
         """
 
         print("{:-^80}".format(" Phone Subscriber Initialization "))
@@ -124,7 +134,7 @@ class PhoneSubscriber:
         print("Phone Subscriber Initialization Done.")
         print("{:-^80}".format(""))
 
-    def subscribeMessage(self) -> Tuple[bytes, list, int, int, list, list]:
+    def subscribeMessage(self) -> Tuple[bytes, bytes, int, int, list, list]:
         """Subscribe the message.
 
         Args:
@@ -143,13 +153,13 @@ class PhoneSubscriber:
         """
 
         # Receive the message
-        
+
         if self.poller.poll(self.timeout):
             msg = self.subscriber.recv()
             # Parse the message
             self.phone.ParseFromString(msg)
         else:
-            raise zmq.ZMQError("No message received within the timeout period.")
+            raise RuntimeError("No message received within the timeout period.")
         return (
             self.phone.color_img,
             self.phone.depth_img,

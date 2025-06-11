@@ -7,7 +7,9 @@ from magiclaw.modules.protobuf import claw_msg_pb2
 
 
 class ClawPublisher:
-    def __init__(self, host: str = "0.0.0.0", port: int = None, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(
+        self, host: str, port: int, hwm: int = 1, conflate: bool = True
+    ) -> None:
         """Publisher initialization.
 
         Args:
@@ -82,7 +84,14 @@ class ClawPublisher:
 
 
 class ClawSubscriber:
-    def __init__(self, host, port, hwm: int = 1, conflate: bool = True, timeout: int = 100) -> None:
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        hwm: int = 1,
+        conflate: bool = True,
+        timeout: int = 100,
+    ) -> None:
         """Subscriber initialization.
 
         Args:
@@ -90,6 +99,7 @@ class ClawSubscriber:
             port (int): The port number of the subscriber.
             hwm (int): High water mark for the subscriber. Default is 1.
             conflate (bool): Whether to conflate messages. Default is True.
+            timeout (int): Maximum time to wait for a message in milliseconds. Default is 100 ms.
         """
 
         print("{:-^80}".format(" Claw Subscriber Initialization "))
@@ -123,7 +133,7 @@ class ClawSubscriber:
         print("Claw Subscriber Initialization Done.")
         print("{:-^80}".format(""))
 
-    def subscribeMessage(self) -> Tuple[float, float, float, int]:
+    def subscribeMessage(self) -> Tuple[float, float, float, float, float, int]:
         """Subscribe the message.
 
         Args:
@@ -140,7 +150,7 @@ class ClawSubscriber:
         if self.poller.poll(self.timeout):
             self.claw.ParseFromString(self.subscriber.recv())
         else:
-            raise zmq.ZMQError("No message received within the timeout period.")
+            raise RuntimeError("No message received within the timeout period.")
         return (
             self.claw.angle,
             self.claw.motor.angle,

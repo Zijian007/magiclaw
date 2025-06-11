@@ -9,6 +9,7 @@ This module contains the configuration for the ZMQ publisher and subscriber.
 
 import os
 import yaml
+from typing import Optional
 
 
 class ZMQConfig:
@@ -30,6 +31,8 @@ class ZMQConfig:
     def __init__(
         self,
         claw_id: int = 0,
+        phone_host: Optional[str] = None,
+        bilateral_host: Optional[str] = None,
     ) -> None:
         """
         Initialize the ZMQ configuration.
@@ -56,10 +59,10 @@ class ZMQConfig:
         else:
             raise ValueError("Invalid claw ID. Must be 0 or 1.")
 
-        self.phone_host = None
+        self.phone_host = phone_host
         self.phone_port = 8000
 
-        self.bilateral_host = None
+        self.bilateral_host = bilateral_host
 
     def read_config_file(self, file_path: str, root_dir: str = ".") -> None:
         """

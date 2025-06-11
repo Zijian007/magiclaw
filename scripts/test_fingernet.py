@@ -46,7 +46,7 @@ def fingernet_test(onnx_path: str):
         dtype=np.float32,
     )
     # Infer the model
-    outputs = fingernet.infer(input)
+    outputs = fingernet.infer(inputs)
     # Print the input and output
     print("Input:", inputs)
     for i, output in enumerate(outputs):

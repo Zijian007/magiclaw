@@ -8,7 +8,9 @@ from magiclaw.modules.protobuf import finger_msg_pb2
 
 
 class FingerPublisher:
-    def __init__(self, host, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(
+        self, host: str, port: int, hwm: int = 1, conflate: bool = True
+    ) -> None:
         """Publisher initialization.
 
         Args:
@@ -79,7 +81,14 @@ class FingerPublisher:
 
 
 class FingerSubscriber:
-    def __init__(self, host, port, hwm: int = 1, conflate: bool = True, timeout: int = 100) -> None:
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        hwm: int = 1,
+        conflate: bool = True,
+        timeout: int = 100,
+    ) -> None:
         """Subscriber initialization.
 
         Args:
@@ -87,6 +96,7 @@ class FingerSubscriber:
             port (int): The port number of the subscriber.
             hwm (int): High water mark for the subscriber. Default is 1.
             conflate (bool): Whether to conflate messages. Default is True.
+            timeout (int): Maximum time to wait for a message in milliseconds. Default is 100 ms.
         """
 
         print("{:-^80}".format(" Finger Subscriber Initialization "))
@@ -121,7 +131,7 @@ class FingerSubscriber:
         print("Finger Subscriber Initialization Done.")
         print("{:-^80}".format(""))
 
-    def subscribeMessage(self) -> Tuple[bytes, np.ndarray, np.ndarray, np.ndarray]:
+    def subscribeMessage(self) -> Tuple[bytes, list, list, list]:
         """Subscribe the message.
 
         Args:
@@ -138,7 +148,7 @@ class FingerSubscriber:
         """
 
         # Receive the message
-        
+
         if self.poller.poll(self.timeout):
             self.finger.ParseFromString(self.subscriber.recv())
         else:

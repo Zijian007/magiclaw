@@ -73,14 +73,15 @@ class WebCamera:
         self.aruco_estimate_params.solvePnPMethod = cv2.SOLVEPNP_IPPE_SQUARE
         # Set the marker size
         self.marker_size = camera_cfg.marker_size
+        self.marker_num = camera_cfg.marker_num
         print(f"Marker size: {self.marker_size}")
         # Set the translation and rotation from marker frame to global frame
         self.transfer_tvec = np.array(camera_cfg.marker2global_tvec)
         self.transfer_rmat = np.array(camera_cfg.marker2global_rmat)
         # Set the initial pose
-        self.init_pose = np.zeros(6)
+        self.init_pose = np.zeros([self.marker_num, 6])
         # Set the pose
-        self.pose = np.zeros(6)
+        self.pose = np.zeros([self.marker_num, 6])
         # Set the clahe
         self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
         # Set the sharpen kernel
@@ -214,7 +215,7 @@ class WebCamera:
 
         # Check if the markers are detected
         if ids is None:
-            return np.zeros([1, 6]), img
+            return np.ones([self.marker_num, 6])*1000, img
 
         # Estimate the pose using IPPE_SQUARE
         rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(corners, self.marker_size, self.mtx, self.dist)
@@ -291,10 +292,11 @@ class WebCamera:
             self.last_pose = pose
 
         # Check if the pose is valid
-        if np.linalg.norm(pose[:3] - self.last_pose[:3]) > 20:
-            self.pose = self.last_pose
-        else:
-            self.pose = pose
+        for i in range(len(pose)):
+            if np.linalg.norm(pose[i, :3] - self.last_pose[i, :3]) > 20:
+                self.pose[i] = self.last_pose[i]  # Reset to last pose if the translation is too large
+            else:
+                self.pose = pose
         self.last_pose = self.pose
         self.img = img
 

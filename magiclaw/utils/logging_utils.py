@@ -5,6 +5,7 @@ Utility logging functions for MagiClaw.
 """
 
 import os
+import gc
 import psutil
 import logging
 from logging import Logger
@@ -45,7 +46,7 @@ def init_logger(log_file_path: str) -> Logger:
     return logger
 
 
-def check_system_resources(logger: Logger, fps: int) -> bool:
+def check_system_resources(logger: Logger, fps: str) -> bool:
     """
     Check system resources and return True if they are critical.
 
@@ -70,13 +71,15 @@ def check_system_resources(logger: Logger, fps: int) -> bool:
     logger.info(
         f"System status: CPU Temp: {cpu_temp}°C, Memory: {memory_percent}%, CPU: {cpu_percent}%, FPS: {fps}"
     )
+    
+    gc.collect()  # Run garbage collection to free up memory
 
     # Check for critical conditions
     if cpu_temp > 80:
         # 80°C is getting dangerous for Pi
         logger.critical(f"CPU temperature critical: {cpu_temp}°C")
         return True
-    if memory_percent > 80:
+    if memory_percent > 90:
         # Almost out of memory
         logger.critical(f"Memory usage critical: {memory_percent}%")
         return True

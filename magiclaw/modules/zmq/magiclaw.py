@@ -8,7 +8,9 @@ from magiclaw.modules.protobuf import magiclaw_msg_pb2
 
 
 class MagiClawPublisher:
-    def __init__(self, host, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(
+        self, host: str, port: int, hwm: int = 1, conflate: bool = True
+    ) -> None:
         """Publisher initialization.
 
         Args:
@@ -61,7 +63,7 @@ class MagiClawPublisher:
         finger_0_pose: list = np.zeros(6, dtype=np.float32).tolist(),
         finger_0_force: list = np.zeros(6, dtype=np.float32).tolist(),
         finger_0_node: list = np.zeros(6, dtype=np.float32).tolist(),
-        finger_1_img_bytes: np.ndarray = b"",
+        finger_1_img_bytes: bytes = b"",
         finger_1_pose: list = np.zeros(6, dtype=np.float32).tolist(),
         finger_1_force: list = np.zeros(6, dtype=np.float32).tolist(),
         finger_1_node: list = np.zeros(6, dtype=np.float32).tolist(),
@@ -102,20 +104,22 @@ class MagiClawPublisher:
         self.magiclaw.phone.depth_height = phone_depth_height
         self.magiclaw.phone.local_pose[:] = phone_local_pose
         self.magiclaw.phone.global_pose[:] = phone_global_pose
-        
+
         # Publish the message
         self.publisher.send(self.magiclaw.SerializeToString())
-        
+
     def close(self):
         """Close ZMQ socket and context to prevent memory leaks."""
-        if hasattr(self, 'publisher') and self.publisher:
+        if hasattr(self, "publisher") and self.publisher:
             self.publisher.close()
-        if hasattr(self, 'context') and self.context:
+        if hasattr(self, "context") and self.context:
             self.context.term()
 
 
 class MagiClawSubscriber:
-    def __init__(self, host, port, hwm: int = 1, conflate: bool = True) -> None:
+    def __init__(
+        self, host: str, port: int, hwm: int = 1, conflate: bool = True
+    ) -> None:
         """Subscriber initialization.
 
         Args:
@@ -150,9 +154,7 @@ class MagiClawSubscriber:
             "{\n\tfloat angle = 1;\n\tfloat speed = 2;\n\tfloat iq = 3;\n\tint32 temperature = 4;\n}"
         )
         print("Message Claw")
-        print(
-            "{\n\tfloat angle = 1;\n\tMotor motor = 2;\n}"
-        )
+        print("{\n\tfloat angle = 1;\n\tMotor motor = 2;\n}")
         print("Message Finger")
         print(
             "{\n\tbytes img = 1;\n\trepeated float pose = 2;\n\trepeated float force = 3;\n\trepeated float node = 4;\n}"
@@ -169,7 +171,25 @@ class MagiClawSubscriber:
         print("Claw Subscriber Initialization Done.")
         print("{:-^80}".format(""))
 
-    def subscribeMessage(self) -> Tuple[float, float, float, int, bytes, np.ndarray, np.ndarray, np.ndarray, bytes, np.ndarray, np.ndarray, np.ndarray, bytes, np.ndarray, np.ndarray]:
+    def subscribeMessage(
+        self,
+    ) -> Tuple[
+        float,
+        float,
+        float,
+        int,
+        bytes,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        bytes,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        bytes,
+        np.ndarray,
+        np.ndarray,
+    ]:
         """Subscribe the message.
 
         Returns:
@@ -178,7 +198,7 @@ class MagiClawSubscriber:
 
         # Receive the message
         self.magiclaw.ParseFromString(self.subscriber.recv())
-        
+
         # Unpack the message
         claw_angle = self.magiclaw.claw.angle
         motor_angle = self.magiclaw.claw.motor.angle
@@ -197,7 +217,7 @@ class MagiClawSubscriber:
         phone_depth_img = self.magiclaw.phone.depth_img
         phone_local_pose = np.array(self.magiclaw.phone.local_pose)
         phone_global_pose = np.array(self.magiclaw.phone.global_pose)
-        
+
         return (
             claw_angle,
             motor_angle,
@@ -220,7 +240,7 @@ class MagiClawSubscriber:
 
     def close(self):
         """Close ZMQ socket and context to prevent memory leaks."""
-        if hasattr(self, 'subscriber') and self.subscriber:
+        if hasattr(self, "subscriber") and self.subscriber:
             self.subscriber.close()
-        if hasattr(self, 'context') and self.context:
+        if hasattr(self, "context") and self.context:
             self.context.term()

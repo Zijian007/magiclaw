@@ -7,7 +7,14 @@ from magiclaw.modules.protobuf import cam_msg_pb2
 
 
 class CameraSubscriber:
-    def __init__(self, host, port, hwm: int = 1, conflate: bool = True, timeout: int = 1000) -> None:
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        hwm: int = 1,
+        conflate: bool = True,
+        timeout: int = 1000,
+    ) -> None:
         """Subscriber initialization.
 
         Args:
@@ -15,6 +22,7 @@ class CameraSubscriber:
             port (int): The port number of the subscriber.
             hwm (int): High water mark for the subscriber. Default is 1.
             conflate (bool): Whether to conflate messages. Default is True.
+            timeout (int): Maximum time to wait for a message in milliseconds. Default is 1000 ms.
         """
 
         print(f"Address: tcp://{host}:{port}")
@@ -69,14 +77,14 @@ class CameraSubscriber:
 
     def close(self):
         """Close ZMQ socket and context to prevent memory leaks."""
-        if hasattr(self, 'subscriber') and self.subscriber:
+        if hasattr(self, "subscriber") and self.subscriber:
             try:
                 self.poller.unregister(self.subscriber)
                 self.subscriber.close()
                 self.subscriber = None
             except Exception as e:
                 print(f"Error closing subscriber: {e}")
-        if hasattr(self, 'context') and self.context:
+        if hasattr(self, "context") and self.context:
             try:
                 self.context.term()
                 self.context = None

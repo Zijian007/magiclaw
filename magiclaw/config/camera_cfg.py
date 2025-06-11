@@ -10,6 +10,7 @@ This module contains the configuration for the camera.
 import os
 import numpy as np
 import yaml
+from typing import Optional
 
 class CameraConfig:
     """
@@ -33,13 +34,14 @@ class CameraConfig:
     def __init__(
         self,
         mode: str = "web",
-        host: str = None,
+        host: Optional[str] = None,
         port: int = 5555,
         width: int = 320,
         height: int = 240,
         dist: np.ndarray = np.array([0.0, 0.0, 0.0, 0.0, 0.0]),
         mtx: np.ndarray = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]),
         marker_size: float = 0.008,
+        marker_num: int = 1,
         filter_on: bool = True,
         filter_frame: int = 5,
         marker2global_tvec: np.ndarray = np.array([0.0, 0.0, 0.0]),
@@ -57,6 +59,7 @@ class CameraConfig:
             dist (np.ndarray): The distortion coefficients of the camera.
             mtx (np.ndarray): The camera matrix.
             marker_size (float): The size of the marker in meters.
+            marker_num (int): The number of markers to detect.
             filter (bool): Whether to apply a filter to the image.
             filter_size (int): The size of the filter kernel.
             marker2global_translation (np.ndarray): The translation vector from the marker to the global frame.
@@ -71,6 +74,7 @@ class CameraConfig:
         self.dist = dist
         self.mtx = mtx
         self.marker_size = marker_size
+        self.marker_num = marker_num
         self.filter_on = filter_on
         self.filter_frame = filter_frame
         self.marker2global_tvec = marker2global_tvec

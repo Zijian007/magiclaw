@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Utility neural network functions for MagiClaw.
+Utility functions for neural network in MagiClaw.
 """
 
 import os

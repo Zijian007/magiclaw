@@ -51,6 +51,7 @@ import argparse
 import time
 import yaml
 import numpy as np
+from typing import Optional
 from pylkmotor import LKMotor
 from magiclaw.config import ClawConfig
 
@@ -239,9 +240,16 @@ class Claw:
             self.motor_angle_percent = self.motor_angle / self.motor_angle_range
 
             # Read the motor temperature, iq, speed
-            motor_temperature, motor_iq, motor_speed, _ = (
-                self.motor.read_motor_status_2()
-            )
+            try:
+                motor_status = self.motor.read_motor_status_2()
+                if motor_status is not None:
+                    motor_temperature, motor_iq, motor_speed, _ = motor_status
+                else:
+                    raise ValueError("Motor status is None.")
+            except Exception as e:
+                raise ValueError(
+                    f"Failed to read the motor status: {e}. Please check the connection."
+                )
             self.motor_temperature = motor_temperature
             self.motor_speed = motor_speed
             self.motor_iq = motor_iq / 2048 * 16.5
@@ -310,8 +318,8 @@ class Claw:
         self.torque_control(iq)
 
     def bilateral_control(
-        self, bilateral_motor_angle_percent: float,
-        bilateral_motor_speed: float,
+        self, bilateral_motor_angle_percent: Optional[float] = None,
+        bilateral_motor_speed: Optional[float] = None,
     ) -> None:
         """
         Bilateral control.
@@ -359,9 +367,8 @@ class Claw:
 
     def bilateral_spring_damping_control(
         self,
-        bilateral_motor_angle_percent: float,
-        bilateral_motor_speed: float,
-        target_angle: float = 0.0,
+        bilateral_motor_angle_percent: Optional[float] = None,
+        bilateral_motor_speed: Optional[float] = None,
     ) -> None:
         """
         Bilateral spring damping control.
@@ -436,12 +443,9 @@ if __name__ == "__main__":
         claw_params = yaml.load(f, Loader=yaml.Loader)
 
     # Create a Claw object
-    claw = Claw(
-        claw_id=claw_params["id"],
-        lead=claw_params["lead"],
-        gear_radius=claw_params["gear_radius"],
-        **claw_params["motor"],
-    )
+    claw_cfg = ClawConfig()
+    claw_cfg.read_config_file(f"configs/claw/claw_{args.claw_id}.yaml")
+    claw = Claw(claw_cfg)
 
     # Release the motor
     claw.stop()

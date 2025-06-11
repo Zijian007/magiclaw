@@ -2,6 +2,9 @@
 
 import argparse
 import os
+import numpy as np
+from magiclaw.utils.math_utils import convert_pose
+from scipy.spatial.transform import Rotation as R
 from magiclaw.modules.zmq import PhoneSubscriber
 from magiclaw.config import ZMQConfig
 
@@ -31,13 +34,21 @@ def phone_test(params_path: str, headless: bool = False, save_images: bool = Fal
         host=zmq_config.phone_host,
         port=zmq_config.phone_port,
     )
-    
+    conversion_matrix = np.array(
+        [
+            [1, 0, 0, 0],
+            [0, 0, 1, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 1],
+        ],
+        dtype=np.float32,
+    )
     
     color_img_list = []
     depth_img_list = []
     try:
         while True:
-            color_img, depth_img, depth_width, depth_height, local_pose, global_pose = phone_subscriber.subscribeMessage(timeout=1000)
+            color_img, depth_img, depth_width, depth_height, local_pose, global_pose = phone_subscriber.subscribeMessage()
             # if color_img is not None:
             #     # Display the color image
             #     cv2.imshow("Color Image", color_img)
@@ -50,7 +61,9 @@ def phone_test(params_path: str, headless: bool = False, save_images: bool = Fal
             #         depth_img_list.append(depth_img)
             if global_pose is not None:
                 # Display the pose
-                print(f"Pose: {global_pose}")
+                global_pose = convert_pose(np.array(global_pose), conversion_matrix)
+                global_pose = R.from_quat(global_pose[3:]).as_euler('xyz', degrees=True)
+                print(f"Pose: {global_pose[0]:6.3f}, {global_pose[1]:6.3f}, {global_pose[2]:6.3f} (degrees)")
     except KeyboardInterrupt:
         print("Exiting...")
     # Release resources
@@ -68,7 +81,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--params_path",
         type=str,
-        default="configs_example/phone/phone_0.yaml",
+        default="./configs/phone/phone_0.yaml",
         help="Path to the phone parameters file.",
     )
     parser.add_argument(

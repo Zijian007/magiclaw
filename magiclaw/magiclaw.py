@@ -33,6 +33,7 @@ import pathlib
 from .config import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig
 from .utils.process_utils import teleop_processes, standalone_processes
 from .utils.logging_utils import init_logger
+import tracemalloc
 
 
 class MagiClaw:
@@ -139,13 +140,13 @@ class MagiClaw:
             KeyboardInterrupt: If the user interrupts the process.
             Exception: If any error occurs during the process.
         """
-
+        
         # Start processes
         try:
             self.logger.info("Starting MagiClaw processes...")
             # Set all processes as daemon except the last one
             for i in range(len(self.processes) - 1):
-                self.processes[i].daemon = True
+                # self.processes[i].daemon = True
                 self.processes[i].start()
                 self.logger.info(f"Process {i} started")
                 # Small delay to ensure processes start in sequence
