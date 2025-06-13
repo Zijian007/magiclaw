@@ -69,7 +69,7 @@ def check_system_resources(logger: Logger, fps: str) -> bool:
 
     # Log system status every call
     logger.info(
-        f"System status: CPU Temp: {cpu_temp}°C, Memory: {memory_percent}%, CPU: {cpu_percent}%, FPS: {fps}"
+        f"System status: Memory: {memory_percent}%, CPU: {cpu_percent}%, FPS: {fps}"
     )
     
     gc.collect()  # Run garbage collection to free up memory
