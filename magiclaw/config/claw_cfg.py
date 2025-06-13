@@ -12,11 +12,10 @@ import yaml
 from .motor_cfg import MotorConfig
 
 
-
 class ClawConfig:
     """
     Claw configuration class.
-    
+
     Attributes:
         claw_id (int): The ID of the claw.
         lead (float): The lead of the screw.
@@ -40,14 +39,14 @@ class ClawConfig:
     ) -> None:
         """
         Initialize the claw configuration.
-        
+
         Args:
             claw_id (int): The ID of the claw.
             lead (float): The lead of the screw.
             gear_radius (float): The radius of the gear.
             motor_config (MotorConfig): The motor configuration object.
         """
-        
+
         self.claw_id = claw_id
         self.lead = lead
         self.gear_radius = gear_radius

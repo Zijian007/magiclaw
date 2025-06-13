@@ -41,4 +41,5 @@ message MagiClaw
     Finger finger_0 = 3;
     Finger finger_1 = 4;
     Phone phone = 5;
+    repeated float pose = 6;
 }

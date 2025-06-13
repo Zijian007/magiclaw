@@ -23,9 +23,15 @@ from magiclaw.modules.zmq import (
     ClawSubscriber,
     PhoneSubscriber,
 )
-from magiclaw.config import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig
+from magiclaw.config import (
+    ZMQConfig,
+    ClawConfig,
+    CameraConfig,
+    FingerNetConfig,
+    PhoneConfig,
+)
 from magiclaw.utils.logging_utils import check_system_resources
-from magiclaw.utils.math_utils import convert_pose
+from magiclaw.utils.math_utils import convert_pose, r_from_quat, r_to_quat
 
 
 def standalone_claw_process(
@@ -142,7 +148,9 @@ def bilateral_claw_process(
         )
     else:
         bilateral_subscriber = ClawSubscriber(
-            host=zmq_cfg.bilateral_host, port=zmq_cfg.claw_port, timeout=100
+            host=zmq_cfg.bilateral_host,
+            port=zmq_cfg.claw_port,
+            timeout=100,
         )
 
     print(f" MagiClaw {claw_cfg.claw_id} Initialization Done.")
@@ -265,7 +273,8 @@ def finger_process(
 
     # Initialize publisher with high water mark
     finger_publisher = FingerPublisher(
-        host=zmq_cfg.public_host, port=getattr(zmq_cfg, f"finger_{finger_index}_port")
+        host=zmq_cfg.public_host,
+        port=getattr(zmq_cfg, f"finger_{finger_index}_port"),
     )
 
     print(f" Finger {finger_index} Initialization Done.")
@@ -273,7 +282,7 @@ def finger_process(
 
     # JPEG compression - higher value = lower quality = less memory
     jpeg_params = [int(cv2.IMWRITE_JPEG_QUALITY), 50]
-    
+
     # Set the loop period
     loop_start = 0.0
     remaining_time = 0.0
@@ -327,6 +336,7 @@ def finger_process(
 
 def publish_process(
     logger: Logger,
+    phone_cfg: PhoneConfig,
     zmq_cfg: ZMQConfig,
     loop_rate: int = 60,
 ) -> None:
@@ -346,59 +356,90 @@ def publish_process(
     print("{:=^80}".format(" MagiClaw Publisher Initialization "))
 
     # Initialize subscribers with settings to only get latest message
-    claw_subscriber = ClawSubscriber(host=zmq_cfg.public_host, port=zmq_cfg.claw_port)
+    claw_subscriber = ClawSubscriber(
+        host=zmq_cfg.public_host,
+        port=zmq_cfg.claw_port,
+        timeout=int(1000 / loop_rate),
+    )
     finger_0_subscriber = FingerSubscriber(
-        host=zmq_cfg.public_host, port=zmq_cfg.finger_0_port, timeout=int(1000 / loop_rate)
+        host=zmq_cfg.public_host,
+        port=zmq_cfg.finger_0_port,
+        timeout=int(1000 / loop_rate),
     )
     finger_1_subscriber = FingerSubscriber(
-        host=zmq_cfg.public_host, port=zmq_cfg.finger_1_port, timeout=int(1000 / loop_rate)
+        host=zmq_cfg.public_host,
+        port=zmq_cfg.finger_1_port,
+        timeout=int(1000 / loop_rate),
     )
-    if zmq_cfg.phone_host is None:
+    if phone_cfg.host is None:
         logger.warning(
-            "Phone subscriber is not initialized, phone data will not be published."
+            "Phone subscriber is not initialized, phone data will be default."
         )
     else:
         phone_subscriber = PhoneSubscriber(
-            host=zmq_cfg.phone_host, port=zmq_cfg.phone_port, timeout=int(1000 / loop_rate)
+            host=phone_cfg.host,
+            port=phone_cfg.port,
+            timeout=int(1000 / loop_rate),
         )
     magiclaw_publisher = MagiClawPublisher(
-        host=zmq_cfg.public_host, port=zmq_cfg.publish_port
+        host=zmq_cfg.public_host,
+        port=zmq_cfg.publish_port,
     )
 
-    default_finger_pose = np.zeros(6, dtype=np.float32).tolist()
-    default_finger_force = np.zeros(6, dtype=np.float32).tolist()
-    default_finger_node = np.zeros(6, dtype=np.float32).tolist()
-    default_finger_img_bytes = cv2.imencode(
+    claw_angle = 0.0
+    motor_angle = 0.0
+    motor_angle_percent = 0.0
+    motor_speed = 0.0
+    motor_iq = 0.0
+    motor_temperature = 0
+
+    finger_0_pose = np.zeros(6, dtype=np.float32).tolist()
+    finger_0_force = np.zeros(6, dtype=np.float32).tolist()
+    finger_0_node = np.zeros(6, dtype=np.float32).tolist()
+    finger_0_img_bytes = cv2.imencode(
         ".jpg",
         np.zeros((240, 320, 3), dtype=np.uint8),
         [int(cv2.IMWRITE_JPEG_QUALITY), 50],
     )[1].tobytes()
-    default_phone_color_img_bytes = cv2.imencode(
+    finger_1_pose = np.zeros(6, dtype=np.float32).tolist()
+    finger_1_force = np.zeros(6, dtype=np.float32).tolist()
+    finger_1_node = np.zeros(6, dtype=np.float32).tolist()
+    finger_1_img_bytes = cv2.imencode(
+        ".jpg",
+        np.zeros((240, 320, 3), dtype=np.uint8),
+        [int(cv2.IMWRITE_JPEG_QUALITY), 50],
+    )[1].tobytes()
+    phone_color_img_bytes = cv2.imencode(
         ".jpg",
         np.zeros((480, 640, 3), dtype=np.uint8),
         [int(cv2.IMWRITE_JPEG_QUALITY), 50],
     )[1].tobytes()
-    default_phone_depth_img_bytes = np.ones((192, 256), dtype=np.uint16).tobytes()
-    default_phone_local_pose = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-    default_phone_global_pose = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+    phone_depth_img_bytes = np.ones((192, 256), dtype=np.uint16).tobytes()
+    phone_depth_width = 256
+    phone_depth_height = 192
+    phone_local_pose = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+    phone_global_pose = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+    magiclaw_pose = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 
     print(" MagiClaw Publisher Initialization Done.")
     print("{:=^80}".format(""))
 
     # Set the initial time and message count
-    start_time = time.time()
+    start_time = 0
     msg_count = 0
 
     # y-up, x-right, z-back to z-up, x-back, y-right
-    conversion_matrix = np.array(
+    phone_pose_conv_mat = np.array(
         [
-            [0, 0, 1, 0],
             [1, 0, 0, 0],
+            [0, 0, -1, 0],
             [0, 1, 0, 0],
             [0, 0, 0, 1],
         ],
         dtype=np.float32,
     )
+
+    phone_init_r = r_from_quat(np.array(phone_cfg.init_pose[3:], dtype=np.float32))
 
     # Start the loop
     try:
@@ -416,12 +457,6 @@ def publish_process(
             except Exception as e:
                 if msg_count % (loop_rate * 2) == 0:
                     logger.warning(f"Claw subscriber: {str(e)}")
-                claw_angle = 0.0
-                motor_angle = 0.0
-                motor_angle_percent = 0.0
-                motor_speed = 0.0
-                motor_iq = 0.0
-                motor_temperature = 0
 
             # Get finger 0 data
             try:
@@ -431,23 +466,18 @@ def publish_process(
             except Exception as e:
                 if msg_count % (loop_rate * 2) == 0:
                     logger.warning(f"Finger 0 subscriber: {str(e)}")
-                finger_0_img_bytes = default_finger_img_bytes
-                finger_0_pose = default_finger_pose
-                finger_0_force = default_finger_force
-                finger_0_node = default_finger_node
 
             # Get finger 1 data
             try:
-                finger_1_img_bytes, finger_1_pose, finger_1_force, finger_1_node = (
-                    finger_1_subscriber.subscribeMessage()
-                )
+                (
+                    finger_1_img_bytes,
+                    finger_1_pose[:],
+                    finger_1_force[:],
+                    finger_1_node[:],
+                ) = finger_1_subscriber.subscribeMessage()
             except Exception as e:
                 if msg_count % (loop_rate * 2) == 0:
                     logger.warning(f"Finger 1 subscriber: {str(e)}")
-                finger_1_img_bytes = default_finger_img_bytes
-                finger_1_pose = default_finger_pose
-                finger_1_force = default_finger_force
-                finger_1_node = default_finger_node
 
             # Get phone data
             try:
@@ -456,30 +486,41 @@ def publish_process(
                     phone_depth_img_bytes,
                     phone_depth_width,
                     phone_depth_height,
-                    phone_local_pose,
-                    phone_global_pose,
+                    phone_local_pose[:],
+                    phone_global_pose[:],
                 ) = phone_subscriber.subscribeMessage()
+
+                # Change phone pose from y-up to z-up
+                phone_local_pose[:] = list(
+                    convert_pose(
+                        np.array(phone_local_pose, dtype=np.float32),
+                        phone_pose_conv_mat,
+                    )
+                )
+                phone_global_pose[:] = list(
+                    convert_pose(
+                        np.array(phone_global_pose, dtype=np.float32),
+                        phone_pose_conv_mat,
+                    )
+                )
+
+                phone_curr_r = r_from_quat(
+                    np.array(phone_global_pose[3:], dtype=np.float32)
+                )
+                phone_delta_r = phone_curr_r * phone_init_r.inv()
+                magiclaw_quat = r_to_quat(phone_delta_r)
+                magiclaw_pose[:] = [
+                    phone_global_pose[0],
+                    phone_global_pose[1],
+                    phone_global_pose[2],
+                    magiclaw_quat[0],
+                    magiclaw_quat[1],
+                    magiclaw_quat[2],
+                    magiclaw_quat[3],
+                ]
             except Exception as e:
                 if msg_count % (loop_rate * 2) == 0:
                     logger.warning(f"Phone subscriber: {str(e)}")
-                phone_color_img_bytes = default_phone_color_img_bytes
-                phone_depth_img_bytes = default_phone_depth_img_bytes
-                phone_depth_width = 256
-                phone_depth_height = 192
-                phone_local_pose = default_phone_local_pose
-                phone_global_pose = default_phone_global_pose
-
-            # Change phone pose from y-up to z-up
-            phone_local_pose = list(
-                convert_pose(
-                    np.array(phone_local_pose, dtype=np.float32), conversion_matrix
-                )
-            )
-            phone_global_pose = list(
-                convert_pose(
-                    np.array(phone_global_pose, dtype=np.float32), conversion_matrix
-                )
-            )
 
             # Publish the data
             magiclaw_publisher.publishMessage(
@@ -502,6 +543,7 @@ def publish_process(
                 phone_depth_height=phone_depth_height,
                 phone_local_pose=phone_local_pose,
                 phone_global_pose=phone_global_pose,
+                magiclaw_pose=magiclaw_pose,
             )
 
             # Check resources every loop_rate * 2 messages
@@ -541,6 +583,7 @@ def standalone_processes(
     camera_0_cfg: CameraConfig,
     camera_1_cfg: CameraConfig,
     fingernet_cfg: FingerNetConfig,
+    phone_cfg: PhoneConfig,
     zmq_cfg: ZMQConfig,
     loop_rate: int,
 ) -> list:
@@ -589,7 +632,7 @@ def standalone_processes(
     processes.append(
         Process(
             target=publish_process,
-            args=(logger, zmq_cfg, loop_rate),
+            args=(logger, phone_cfg, zmq_cfg, loop_rate),
             name="publish_process",
         )
     )
@@ -603,6 +646,7 @@ def teleop_processes(
     camera_0_cfg: CameraConfig,
     camera_1_cfg: CameraConfig,
     fingernet_cfg: FingerNetConfig,
+    phone_cfg: PhoneConfig,
     zmq_cfg: ZMQConfig,
     mode: str,
     loop_rate: int,
@@ -654,7 +698,7 @@ def teleop_processes(
     processes.append(
         Process(
             target=publish_process,
-            args=(logger, zmq_cfg, loop_rate),
+            args=(logger, phone_cfg, zmq_cfg, loop_rate),
             name="publish_process",
         )
     )

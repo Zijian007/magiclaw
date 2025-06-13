@@ -34,9 +34,6 @@ class PhonePublisher:
         # Bind the address
         self.publisher.bind(f"tcp://{host}:{port}")
 
-        # Init the message
-        self.phone = phone_msg_pb2.Phone()
-
         print("Package Phone")
         print("Message Phone")
         print(
@@ -64,16 +61,17 @@ class PhonePublisher:
         """
 
         # Set the message
-        self.phone.timestamp = datetime.now().timestamp()
-        self.phone.color_img = color_img_bytes
-        self.phone.depth_img = depth_img_bytes
-        self.phone.depth_width = depth_width
-        self.phone.depth_height = depth_height
-        self.phone.local_pose[:] = local_pose
-        self.phone.global_pose[:] = global_pose
+        phone = phone_msg_pb2.Phone()
+        phone.timestamp = datetime.now().timestamp()
+        phone.color_img = color_img_bytes
+        phone.depth_img = depth_img_bytes
+        phone.depth_width = depth_width
+        phone.depth_height = depth_height
+        phone.local_pose[:] = local_pose
+        phone.global_pose[:] = global_pose
 
         # Publish the message
-        self.publisher.send(self.phone.SerializeToString())
+        self.publisher.send(phone.SerializeToString())
 
     def close(self):
         """Close ZMQ socket and context to prevent memory leaks."""
@@ -122,9 +120,6 @@ class PhoneSubscriber:
         self.poller.register(self.subscriber, zmq.POLLIN)
         self.timeout = timeout
 
-        # Init the message
-        self.phone = phone_msg_pb2.Phone()
-
         print("Package Phone")
         print("Message Phone")
         print(
@@ -155,18 +150,21 @@ class PhoneSubscriber:
         # Receive the message
 
         if self.poller.poll(self.timeout):
+            # Receive the message
             msg = self.subscriber.recv()
+            
             # Parse the message
-            self.phone.ParseFromString(msg)
+            phone = phone_msg_pb2.Phone()
+            phone.ParseFromString(msg)
         else:
             raise RuntimeError("No message received within the timeout period.")
         return (
-            self.phone.color_img,
-            self.phone.depth_img,
-            self.phone.depth_width,
-            self.phone.depth_height,
-            self.phone.local_pose,
-            self.phone.global_pose,
+            phone.color_img,
+            phone.depth_img,
+            phone.depth_width,
+            phone.depth_height,
+            phone.local_pose,
+            phone.global_pose,
         )
 
     def close(self):

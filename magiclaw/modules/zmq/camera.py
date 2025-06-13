@@ -4,7 +4,7 @@ import sys
 import zmq
 import numpy as np
 from magiclaw.modules.protobuf import cam_msg_pb2
-
+# import cam_msg_pb2  # Assuming cam_msg_pb2 is generated from cam_msg.proto
 
 class CameraSubscriber:
     def __init__(
@@ -44,9 +44,6 @@ class CameraSubscriber:
         self.poller.register(self.subscriber, zmq.POLLIN)
         self.timeout = timeout
 
-        # Init the message
-        self.cam = cam_msg_pb2.Camera()
-
         print("Package Camera")
         print("Message Camera")
         print("{\n\tbytes img = 1;\n}")
@@ -68,12 +65,15 @@ class CameraSubscriber:
         # Wait for message with timeout
         if self.poller.poll(self.timeout):
             # Receive the message
-            self.cam.ParseFromString(self.subscriber.recv())
-            return np.frombuffer(self.cam.img, dtype=np.uint8)
+            msg = self.subscriber.recv()
+            
+            # Parse the message
+            cam = cam_msg_pb2.Camera()
+            cam.ParseFromString(msg)
+            
+            return np.frombuffer(cam.img, dtype=np.uint8)
         else:
-            print("\033[31mTimeout: No image received!\033[0m")
-            print("\033[31mPlease check the connection!\033[0m")
-            sys.exit()
+            raise RuntimeError("No message received within the timeout period.")
 
     def close(self):
         """Close ZMQ socket and context to prevent memory leaks."""
@@ -90,3 +90,16 @@ class CameraSubscriber:
                 self.context = None
             except Exception as e:
                 print(f"Error terminating context: {e}")
+                
+                
+if __name__ == "__main__":
+    # Example usage
+    camera_subscriber = CameraSubscriber(host="192.168.4.202", port=5555)
+    try:
+        while True:
+            img = camera_subscriber.subscribeMessage()
+            print(f"Received image of shape: {img.shape}")
+    except KeyboardInterrupt:
+        print("Exiting...")
+    finally:
+        camera_subscriber.close()

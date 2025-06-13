@@ -30,7 +30,7 @@ import argparse
 import time
 import yaml
 import pathlib
-from .config import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig
+from .config import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig, PhoneConfig
 from .utils.process_utils import teleop_processes, standalone_processes
 from .utils.logging_utils import init_logger
 import tracemalloc
@@ -65,30 +65,43 @@ class MagiClaw:
             raise ValueError(
                 "\033[31mInvalid mode! Must be 'teleop' or 'standalone'.\033[0m"
             )
-            
+
         # Set root directory
         self.root_dir = pathlib.Path(__file__).parent.parent
 
         # Initialize the logger
-        log_file_path = self.root_dir.joinpath(f"log/{time.strftime('%Y-%m-%d_%H-%M-%S')}.txt")
+        log_file_path = self.root_dir.joinpath(
+            f"log/{time.strftime('%Y-%m-%d_%H-%M-%S')}.txt"
+        )
         self.logger = init_logger(str(log_file_path))
         self.logger.info(f"Starting MagiClaw with id={self.id}")
 
         # Load the parameters
         try:
-            magiclaw_config_path = self.root_dir.joinpath(f"configs/magiclaw_{self.id}.yaml")
+            magiclaw_config_path = self.root_dir.joinpath(
+                f"configs/magiclaw_{self.id}.yaml"
+            )
             with magiclaw_config_path.open("r") as f:
                 params = yaml.load(f, Loader=yaml.Loader)
-                
+
             self.claw_cfg = ClawConfig()
             self.claw_cfg.read_config_file(params["claw"], root_dir=str(self.root_dir))
-            self.zmq_cfg = ZMQConfig()
-            self.zmq_cfg.read_config_file(params["phone"], root_dir=str(self.root_dir))
             self.camera_0_cfg = CameraConfig()
-            self.camera_0_cfg.read_config_file(params["camera_0"], root_dir=str(self.root_dir))
+            self.camera_0_cfg.read_config_file(
+                params["camera_0"], root_dir=str(self.root_dir)
+            )
             self.camera_1_cfg = CameraConfig()
-            self.camera_1_cfg.read_config_file(params["camera_1"], root_dir=str(self.root_dir))
-            self.fingernet_cfg = FingerNetConfig(model_path=str(self.root_dir.joinpath(params["fingernet"])))
+            self.camera_1_cfg.read_config_file(
+                params["camera_1"], root_dir=str(self.root_dir)
+            )
+            self.fingernet_cfg = FingerNetConfig(
+                model_path=str(self.root_dir.joinpath(params["fingernet"]))
+            )
+            self.phone_cfg = PhoneConfig()
+            self.phone_cfg.read_config_file(
+                params["phone"], root_dir=str(self.root_dir)
+            )
+            self.zmq_cfg = ZMQConfig()
         except FileNotFoundError as e:
             self.logger.error(f"Failed to load configuration file: {e}")
             raise e
@@ -96,7 +109,9 @@ class MagiClaw:
         # Load the bilateral parameters
         if self.mode == "teleop":
             try:
-                bilateral_config_path = self.root_dir.joinpath(f"configs/bilateral.yaml")
+                bilateral_config_path = self.root_dir.joinpath(
+                    f"configs/bilateral.yaml"
+                )
                 with bilateral_config_path.open("r") as f:
                     bilateral_params = yaml.load(f, Loader=yaml.Loader)
                     self.zmq_cfg.set_bilateral_host(bilateral_params["host"])
@@ -113,6 +128,7 @@ class MagiClaw:
                 camera_0_cfg=self.camera_0_cfg,
                 camera_1_cfg=self.camera_1_cfg,
                 fingernet_cfg=self.fingernet_cfg,
+                phone_cfg=self.phone_cfg,
                 zmq_cfg=self.zmq_cfg,
                 mode=bilateral_params["mode"],
                 loop_rate=loop_rate,
@@ -124,6 +140,7 @@ class MagiClaw:
                 camera_0_cfg=self.camera_0_cfg,
                 camera_1_cfg=self.camera_1_cfg,
                 fingernet_cfg=self.fingernet_cfg,
+                phone_cfg=self.phone_cfg,
                 zmq_cfg=self.zmq_cfg,
                 loop_rate=loop_rate,
             )
@@ -140,7 +157,7 @@ class MagiClaw:
             KeyboardInterrupt: If the user interrupts the process.
             Exception: If any error occurs during the process.
         """
-        
+
         # Start processes
         try:
             self.logger.info("Starting MagiClaw processes...")

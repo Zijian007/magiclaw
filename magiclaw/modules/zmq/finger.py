@@ -34,9 +34,6 @@ class FingerPublisher:
         # Bind the address
         self.publisher.bind(f"tcp://{host}:{port}")
 
-        # Init the message
-        self.finger = finger_msg_pb2.Finger()
-
         print("Package Finger")
         print("Message Finger")
         print(
@@ -63,14 +60,15 @@ class FingerPublisher:
         """
 
         # Set the message
-        self.finger.timestamp = datetime.now().timestamp()
-        self.finger.img = img_bytes
-        self.finger.pose[:] = pose
-        self.finger.force[:] = force
-        self.finger.node[:] = node
+        finger = finger_msg_pb2.Finger()
+        finger.timestamp = datetime.now().timestamp()
+        finger.img = img_bytes
+        finger.pose[:] = pose
+        finger.force[:] = force
+        finger.node[:] = node
 
         # Publish the message
-        self.publisher.send(self.finger.SerializeToString())
+        self.publisher.send(finger.SerializeToString())
 
     def close(self):
         """Close ZMQ socket and context to prevent memory leaks."""
@@ -118,9 +116,7 @@ class FingerSubscriber:
         self.poller = zmq.Poller()
         self.poller.register(self.subscriber, zmq.POLLIN)
         self.timeout = timeout
-
-        # Init the message
-        self.finger = finger_msg_pb2.Finger()
+        
 
         print("Package Finger")
         print("Message Finger")
@@ -150,14 +146,19 @@ class FingerSubscriber:
         # Receive the message
 
         if self.poller.poll(self.timeout):
-            self.finger.ParseFromString(self.subscriber.recv())
+            # Receive the message
+            msg = self.subscriber.recv()
+            
+            # Parse the message
+            finger = finger_msg_pb2.Finger()
+            finger.ParseFromString(msg)
         else:
             raise RuntimeError("No message received within the timeout period.")
         return (
-            self.finger.img,
-            self.finger.pose,
-            self.finger.force,
-            self.finger.node,
+            finger.img,
+            finger.pose,
+            finger.force,
+            finger.node,
         )
 
     def close(self):

@@ -33,9 +33,6 @@ class ClawPublisher:
         # Bind the address
         self.publisher.bind(f"tcp://{host}:{port}")
 
-        # Init the message
-        self.claw = claw_msg_pb2.Claw()
-
         print("Package Claw")
         print("Message Claw")
         print(
@@ -64,16 +61,17 @@ class ClawPublisher:
         """
 
         # Set the message
-        self.claw.timestamp = datetime.now().timestamp()
-        self.claw.angle = claw_angle
-        self.claw.motor.angle = motor_angle
-        self.claw.motor.angle_percent = motor_angle_percent
-        self.claw.motor.speed = motor_speed
-        self.claw.motor.iq = motor_iq
-        self.claw.motor.temperature = motor_temperature
+        claw = claw_msg_pb2.Claw()
+        claw.timestamp = datetime.now().timestamp()
+        claw.angle = claw_angle
+        claw.motor.angle = motor_angle
+        claw.motor.angle_percent = motor_angle_percent
+        claw.motor.speed = motor_speed
+        claw.motor.iq = motor_iq
+        claw.motor.temperature = motor_temperature
 
         # Publish the message
-        self.publisher.send(self.claw.SerializeToString())
+        self.publisher.send(claw.SerializeToString())
 
     def close(self):
         """Close ZMQ socket and context to prevent memory leaks."""
@@ -121,8 +119,7 @@ class ClawSubscriber:
         self.poller = zmq.Poller()
         self.poller.register(self.subscriber, zmq.POLLIN)
         self.timeout = timeout
-        # Init the message
-        self.claw = claw_msg_pb2.Claw()
+        
 
         print("Package Claw")
         print("Message Claw")
@@ -148,16 +145,21 @@ class ClawSubscriber:
 
         # Receive the message
         if self.poller.poll(self.timeout):
-            self.claw.ParseFromString(self.subscriber.recv())
+            # Receive the message
+            msg = self.subscriber.recv()
+            
+            # Parse the message
+            claw = claw_msg_pb2.Claw()
+            claw.ParseFromString(msg)
         else:
             raise RuntimeError("No message received within the timeout period.")
         return (
-            self.claw.angle,
-            self.claw.motor.angle,
-            self.claw.motor.angle_percent,
-            self.claw.motor.speed,
-            self.claw.motor.iq,
-            self.claw.motor.temperature,
+            claw.angle,
+            claw.motor.angle,
+            claw.motor.angle_percent,
+            claw.motor.speed,
+            claw.motor.iq,
+            claw.motor.temperature,
         )
 
     def close(self):

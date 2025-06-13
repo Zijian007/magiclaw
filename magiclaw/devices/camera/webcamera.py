@@ -45,6 +45,8 @@ class WebCamera:
         self.height = camera_cfg.height
         self.mtx = np.array(camera_cfg.mtx)
         self.dist = np.array(camera_cfg.dist)
+        if camera_cfg.host is None:
+            raise ValueError("Camera host is not set. Please check the configuration file.")
         self.camera = CameraSubscriber(host=camera_cfg.host, port=camera_cfg.port)
         print(f"Resolution: {self.width}x{self.height}")
         print(f"Camera matrix:\n{self.mtx}")
@@ -262,7 +264,8 @@ class WebCamera:
 
         # Read the image from the camera
         try:
-            img = cv2.imdecode(self.camera.subscribeMessage(), cv2.IMREAD_COLOR)
+            img = self.camera.subscribeMessage()
+            img = cv2.imdecode(img, cv2.IMREAD_COLOR)
         except ValueError:
             print("\033[31mCannot read the image from the camera.\033[0m")
             sys.exit()

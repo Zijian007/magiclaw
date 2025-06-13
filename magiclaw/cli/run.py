@@ -20,6 +20,7 @@ def main():
     parser.add_argument(
         "--id",
         type=int,
+        choices=[0, 1],
         default=0,
         help="The ID of the claw (default: 0).",
     )

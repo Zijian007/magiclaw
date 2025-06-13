@@ -31,7 +31,6 @@ class ZMQConfig:
     def __init__(
         self,
         claw_id: int = 0,
-        phone_host: Optional[str] = None,
         bilateral_host: Optional[str] = None,
     ) -> None:
         """
@@ -59,9 +58,6 @@ class ZMQConfig:
         else:
             raise ValueError("Invalid claw ID. Must be 0 or 1.")
 
-        self.phone_host = phone_host
-        self.phone_port = 8000
-
         self.bilateral_host = bilateral_host
 
     def read_config_file(self, file_path: str, root_dir: str = ".") -> None:
@@ -88,12 +84,3 @@ class ZMQConfig:
             host (str): The host address of the bilateral connection.
         """
         self.bilateral_host = host
-        
-    def set_phone_host(self, host: str) -> None:
-        """
-        Set the phone host.
-
-        Args:
-            host (str): The host address of the phone.
-        """
-        self.phone_host = host

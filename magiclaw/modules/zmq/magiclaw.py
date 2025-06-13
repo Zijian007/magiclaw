@@ -34,9 +34,6 @@ class MagiClawPublisher:
         # Bind the address
         self.publisher.bind(f"tcp://{host}:{port}")
 
-        # Init the message
-        self.magiclaw = magiclaw_msg_pb2.MagiClaw()
-
         print("Package Claw")
         print("Message Finger")
         print(
@@ -73,6 +70,7 @@ class MagiClawPublisher:
         phone_depth_height: int = 0,
         phone_local_pose: list = np.zeros(6, dtype=np.float32).tolist(),
         phone_global_pose: list = np.zeros(6, dtype=np.float32).tolist(),
+        magiclaw_pose: list = np.zeros(6, dtype=np.float32).tolist(),
     ) -> None:
         """Publish the message.
 
@@ -84,29 +82,31 @@ class MagiClawPublisher:
         """
 
         # Set the message
-        self.magiclaw.timestamp = datetime.now().timestamp()
-        self.magiclaw.claw.angle = claw_angle
-        self.magiclaw.claw.motor.angle = motor_angle
-        self.magiclaw.claw.motor.speed = motor_speed
-        self.magiclaw.claw.motor.iq = motor_iq
-        self.magiclaw.claw.motor.temperature = motor_temperature
-        self.magiclaw.finger_0.img = finger_0_img_bytes
-        self.magiclaw.finger_0.pose[:] = finger_0_pose
-        self.magiclaw.finger_0.force[:] = finger_0_force
-        self.magiclaw.finger_0.node[:] = finger_0_node
-        self.magiclaw.finger_1.img = finger_1_img_bytes
-        self.magiclaw.finger_1.pose[:] = finger_1_pose
-        self.magiclaw.finger_1.force[:] = finger_1_force
-        self.magiclaw.finger_1.node[:] = finger_1_node
-        self.magiclaw.phone.color_img = phone_color_img_bytes
-        self.magiclaw.phone.depth_img = phone_depth_img_bytes
-        self.magiclaw.phone.depth_width = phone_depth_width
-        self.magiclaw.phone.depth_height = phone_depth_height
-        self.magiclaw.phone.local_pose[:] = phone_local_pose
-        self.magiclaw.phone.global_pose[:] = phone_global_pose
+        magiclaw = magiclaw_msg_pb2.MagiClaw()
+        magiclaw.timestamp = datetime.now().timestamp()
+        magiclaw.claw.angle = claw_angle
+        magiclaw.claw.motor.angle = motor_angle
+        magiclaw.claw.motor.speed = motor_speed
+        magiclaw.claw.motor.iq = motor_iq
+        magiclaw.claw.motor.temperature = motor_temperature
+        magiclaw.finger_0.img = finger_0_img_bytes
+        magiclaw.finger_0.pose[:] = finger_0_pose
+        magiclaw.finger_0.force[:] = finger_0_force
+        magiclaw.finger_0.node[:] = finger_0_node
+        magiclaw.finger_1.img = finger_1_img_bytes
+        magiclaw.finger_1.pose[:] = finger_1_pose
+        magiclaw.finger_1.force[:] = finger_1_force
+        magiclaw.finger_1.node[:] = finger_1_node
+        magiclaw.phone.color_img = phone_color_img_bytes
+        magiclaw.phone.depth_img = phone_depth_img_bytes
+        magiclaw.phone.depth_width = phone_depth_width
+        magiclaw.phone.depth_height = phone_depth_height
+        magiclaw.phone.local_pose[:] = phone_local_pose
+        magiclaw.phone.global_pose[:] = phone_global_pose
+        magiclaw.pose[:] = magiclaw_pose
 
         # Publish the message
-        self.publisher.send(self.magiclaw.SerializeToString())
+        self.publisher.send(magiclaw.SerializeToString())
 
     def close(self):
         """Close ZMQ socket and context to prevent memory leaks."""
@@ -144,10 +144,7 @@ class MagiClawSubscriber:
         self.subscriber.connect(f"tcp://{host}:{port}")
         # Subscribe all messages
         self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
-
-        # Init the message
-        self.magiclaw = magiclaw_msg_pb2.MagiClaw()
-
+        
         print("Package Claw")
         print("Message Motor")
         print(
@@ -178,6 +175,7 @@ class MagiClawSubscriber:
         float,
         float,
         int,
+        int,
         bytes,
         np.ndarray,
         np.ndarray,
@@ -187,6 +185,8 @@ class MagiClawSubscriber:
         np.ndarray,
         np.ndarray,
         bytes,
+        bytes,
+        np.ndarray,
         np.ndarray,
         np.ndarray,
     ]:
@@ -197,26 +197,31 @@ class MagiClawSubscriber:
         """
 
         # Receive the message
-        self.magiclaw.ParseFromString(self.subscriber.recv())
+        msg = self.subscriber.recv()
+        
+        # Parse the message
+        magiclaw = magiclaw_msg_pb2.MagiClaw()
+        magiclaw.ParseFromString(msg)
 
         # Unpack the message
-        claw_angle = self.magiclaw.claw.angle
-        motor_angle = self.magiclaw.claw.motor.angle
-        motor_speed = self.magiclaw.claw.motor.speed
-        motor_iq = self.magiclaw.claw.motor.iq
-        motor_temperature = self.magiclaw.claw.motor.temperature
-        finger_0_img = self.magiclaw.finger_0.img
-        finger_0_pose = np.array(self.magiclaw.finger_0.pose)
-        finger_0_force = np.array(self.magiclaw.finger_0.force)
-        finger_0_node = np.array(self.magiclaw.finger_0.node).reshape(-1, 3)
-        finger_1_img = self.magiclaw.finger_1.img
-        finger_1_pose = np.array(self.magiclaw.finger_1.pose)
-        finger_1_force = np.array(self.magiclaw.finger_1.force)
-        finger_1_node = np.array(self.magiclaw.finger_1.node).reshape(-1, 3)
-        phone_color_img = self.magiclaw.phone.color_img
-        phone_depth_img = self.magiclaw.phone.depth_img
-        phone_local_pose = np.array(self.magiclaw.phone.local_pose)
-        phone_global_pose = np.array(self.magiclaw.phone.global_pose)
+        claw_angle = magiclaw.claw.angle
+        motor_angle = magiclaw.claw.motor.angle
+        motor_speed = magiclaw.claw.motor.speed
+        motor_iq = magiclaw.claw.motor.iq
+        motor_temperature = magiclaw.claw.motor.temperature
+        finger_0_img = magiclaw.finger_0.img
+        finger_0_pose = np.array(magiclaw.finger_0.pose)
+        finger_0_force = np.array(magiclaw.finger_0.force)
+        finger_0_node = np.array(magiclaw.finger_0.node).reshape(-1, 3)
+        finger_1_img = magiclaw.finger_1.img
+        finger_1_pose = np.array(magiclaw.finger_1.pose)
+        finger_1_force = np.array(magiclaw.finger_1.force)
+        finger_1_node = np.array(magiclaw.finger_1.node).reshape(-1, 3)
+        phone_color_img = magiclaw.phone.color_img
+        phone_depth_img = magiclaw.phone.depth_img
+        phone_local_pose = np.array(magiclaw.phone.local_pose)
+        phone_global_pose = np.array(magiclaw.phone.global_pose)
+        magiclaw_pose = np.array(magiclaw.pose)
 
         return (
             claw_angle,
@@ -236,6 +241,7 @@ class MagiClawSubscriber:
             phone_depth_img,
             phone_local_pose,
             phone_global_pose,
+            magiclaw_pose,
         )
 
     def close(self):
