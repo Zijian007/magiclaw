@@ -1,6 +1,6 @@
 [project]
 name = "magiclaw"
-version = "0.1.0"
+version = "0.2.0"
 description = "MagiClaw: Universal Action Embodiment"
 authors = [
     {name = "Xudong Han", email = "12231112@mail.sustech.edu.cn"},
@@ -48,8 +48,8 @@ dependencies = [
 run-magiclaw = "magiclaw.cli:run_magiclaw"
 
 [project.urls]
-homepage = "https://github.com/han-xudong/magiclaw"
-issues = "https://github.com/han-xudong/magiclaw/issues"
+homepage = "https://github.com/asMagiClaw/magiclaw"
+issues = "https://github.com/asMagiClaw/magiclaw/issues"
 
 [tool.poetry]
 requires-poetry = ">=2.1"
