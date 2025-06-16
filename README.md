@@ -1,7 +1,7 @@
 <h1 align="center">MagiClaw</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white" />
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white" /></a>
   <a href="https://www.raspberrypi.com/products/raspberry-pi-5/"><img src="https://img.shields.io/badge/Raspberry_Pi-5_-A22846?logo=raspberry-pi&logoColor=white" /></a>
   <a href=""><img src="https://img.shields.io/badge/Docs-latest-4285F4?logo=google-docs&logoColor=white" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-3DA639?logo=open-source-initiative&logoColor=white" /></a>
