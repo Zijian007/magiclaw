@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/Raspberry_Pi-5_-a22846?logo=raspberry-pi&logoColor=white" />
+  <img src="https://img.shields.io/badge/Raspberry_Pi-5_-A22846?logo=raspberry-pi&logoColor=white" />
   <img src="https://img.shields.io/badge/Docs-latest-4285F4?logo=google-docs&logoColor=white" />
   <img src="https://img.shields.io/badge/License-MIT-3DA639?logo=open-source-initiative&logoColor=white" />
 </p>
