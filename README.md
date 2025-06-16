@@ -2,9 +2,9 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/Raspberry_Pi-5_-A22846?logo=raspberry-pi&logoColor=white" />
-  <img src="https://img.shields.io/badge/Docs-latest-4285F4?logo=google-docs&logoColor=white" />
-  <img src="https://img.shields.io/badge/License-MIT-3DA639?logo=open-source-initiative&logoColor=white" />
+  <a href="https://www.raspberrypi.com/products/raspberry-pi-5/"><img src="https://img.shields.io/badge/Raspberry_Pi-5_-A22846?logo=raspberry-pi&logoColor=white" /></a>
+  <a href=""><img src="https://img.shields.io/badge/Docs-latest-4285F4?logo=google-docs&logoColor=white" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-3DA639?logo=open-source-initiative&logoColor=white" /></a>
 </p>
 
 ## ✨ Overview
@@ -13,7 +13,7 @@ MagiClaw is a versatile human-robot interactive manipulation system designed by 
 
 ## 🦾 Hardware
 
-MagiClaw consists of a motor-driven gripper, two [meta-fingers](https://github.com/asMagiClaw/meta-finger), a Raspberry Pi 5, an iPhone, and several 3D-printed parts. There are two types of MagiClaws, including in-hand and on-robot types. For more details, please refer to the [docs]().
+MagiClaw consists of a motor-driven gripper, two [meta-fingers](https://github.com/asMagiClaw/meta-finger), a [Raspberry Pi 5](https://www.raspberrypi.com/products/raspberry-pi-5/), an iPhone, and several 3D-printed parts. There are two types of MagiClaws, including in-hand and on-robot types. For more details, please refer to the [docs]().
 
 ## 🚀 Installation
 
