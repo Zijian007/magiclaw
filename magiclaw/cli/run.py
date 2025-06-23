@@ -37,10 +37,16 @@ def main():
         default=30,
         help="The loop rate in Hz (default: 30).",
     )
+    parser.add_argument(
+        "--phone_host",
+        type=str,
+        required=False,
+        help="The host address for the phone."
+    )
     args = parser.parse_args()
 
     # Initialize MagiClaw
-    magiclaw = MagiClaw(id=args.id, mode=args.mode, loop_rate=args.loop_rate)
+    magiclaw = MagiClaw(id=args.id, mode=args.mode, loop_rate=args.loop_rate, phone_host=args.phone_host)
 
     # Run MagiClaw
     magiclaw.run()

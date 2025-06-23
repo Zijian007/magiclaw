@@ -74,3 +74,12 @@ class PhoneConfig:
                     for sub_key, sub_value in value.items():
                         if hasattr(self, f"{key}_{sub_key}"):
                             setattr(self, f"{key}_{sub_key}", sub_value)
+                            
+    def set_host(self, host: str) -> None:
+        """
+        Set the host address for the phone.
+
+        Args:
+            host (str): The host address.
+        """
+        self.host = host

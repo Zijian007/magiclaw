@@ -30,6 +30,7 @@ import argparse
 import time
 import yaml
 import pathlib
+from typing import Optional
 from .config import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig, PhoneConfig
 from .utils.process_utils import teleop_processes, standalone_processes
 from .utils.logging_utils import init_logger
@@ -38,7 +39,7 @@ import tracemalloc
 
 class MagiClaw:
     def __init__(
-        self, id: int = 0, mode: str = "standalone", loop_rate: int = 30
+        self, id: int = 0, mode: str = "standalone", loop_rate: int = 30, phone_host: Optional[str] = None
     ) -> None:
         """
         MagiClaw initialization.
@@ -47,6 +48,8 @@ class MagiClaw:
             id (int): The ID of the claw.
             mode (str): The mode to run MagiClaw in. (default: "standalone")
             loop_rate (int): The loop rate in Hz. (default: 30)
+            phone_host (Optional[str]): The host address for the phone. (default: None)
+        
         Raises:
             ValueError: If the claw ID is invalid or not provided.
         """
@@ -101,6 +104,8 @@ class MagiClaw:
             self.phone_cfg.read_config_file(
                 params["phone"], root_dir=str(self.root_dir)
             )
+            if phone_host is not None:
+                self.phone_cfg.set_host(phone_host)
             self.zmq_cfg = ZMQConfig()
         except FileNotFoundError as e:
             self.logger.error(f"Failed to load configuration file: {e}")
