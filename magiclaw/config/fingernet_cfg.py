@@ -22,7 +22,7 @@ class FingerNetConfig:
     def __init__(
         self,
         name: str = "FingerNet",
-        model_path: Optional[str] = None,
+        model_path: str = None,
         device: str = "auto",
     ) -> None:
         """

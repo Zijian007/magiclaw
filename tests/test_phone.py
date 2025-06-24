@@ -6,7 +6,7 @@ import numpy as np
 from magiclaw.utils.math_utils import convert_pose
 from scipy.spatial.transform import Rotation as R
 from magiclaw.modules.zmq import PhoneSubscriber
-from magiclaw.config import ZMQConfig
+from magiclaw.config import PhoneConfig
 
 # Configure OpenCV for headless environment BEFORE importing cv2
 os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"  # Disable Windows Media Foundation
@@ -26,19 +26,19 @@ def phone_test(params_path: str, headless: bool = False, save_images: bool = Fal
         save_images (bool): Save phone frames as images.
     """
 
-    zmq_config = ZMQConfig()
-    zmq_config.read_config_file(params_path)
+    phone_cfg = PhoneConfig()
+    phone_cfg.read_config_file(params_path)
 
     # Create a PhonePublisher instance
-    if zmq_config.phone_host is None:
+    if phone_cfg.host is None:
         raise ValueError("Phone host is not set in the configuration file.")
     phone_subscriber = PhoneSubscriber(
-        host=zmq_config.phone_host,
-        port=zmq_config.phone_port,
+        host=phone_cfg.host,
+        port=phone_cfg.port,
     )
     conversion_matrix = np.array(
         [
-            [1, 0, 0, 0],
+            [-1, 0, 0, 0],
             [0, 0, 1, 0],
             [0, 1, 0, 0],
             [0, 0, 0, 1],

@@ -428,11 +428,11 @@ def publish_process(
     start_time = 0
     msg_count = 0
 
-    # y-up, x-right, z-back to z-up, x-back, y-right
+    # y-up, x-right, z-back to z-up, x-left, y-back
     phone_pose_conv_mat = np.array(
         [
-            [1, 0, 0, 0],
-            [0, 0, -1, 0],
+            [-1, 0, 0, 0],
+            [0, 0, 1, 0],
             [0, 1, 0, 0],
             [0, 0, 0, 1],
         ],
