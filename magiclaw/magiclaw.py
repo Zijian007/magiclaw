@@ -18,15 +18,17 @@ To run Magiclaw, use the following command:
 ```
 from magiclaw import MagiClaw
 
-magiclaw = MagiClaw(id=<id>, mode=<mode>)
-magiclaw.run(loop_rate=<loop_rate>)
+magiclaw = MagiClaw(id=<id>, mode=<mode>, loop_rate=<loop_rate>, phone_host=<phone_host>, bilateral_host=<bilateral_host>)
+magiclaw.run()
 ```
 
-where `<id> (default: 0)` is the ID of the claw, <mode> (default: "teleop") is the mode to run MagiClaw in,
-and <loop_rate> (default: 30) is the loop rate in Hz.
+where `<id> is the MagiClaw's ID (corresponding to the `CAN` interface, default is 0), <mode> is the operation mode (
+including `standalone` and `teleop`, default is `standalone`), <loop_rate> is the loop rate in Hz (default is 30), 
+`<phone_host>` is the host address for the phone (overwrite the default value in the config file, optional),  and 
+`<bilateral_host>` is the host address for the bilateral communication (only required in `teleop` mode, overwrite the 
+default value in the config file, optional).
 """
 
-import argparse
 import time
 import yaml
 import pathlib
@@ -34,12 +36,16 @@ from typing import Optional
 from .config import ZMQConfig, ClawConfig, CameraConfig, FingerNetConfig, PhoneConfig
 from .utils.process_utils import teleop_processes, standalone_processes
 from .utils.logging_utils import init_logger
-import tracemalloc
 
 
 class MagiClaw:
     def __init__(
-        self, id: int = 0, mode: str = "standalone", loop_rate: int = 30, phone_host: Optional[str] = None
+        self,
+        id: int = 0,
+        mode: str = "standalone",
+        loop_rate: int = 30,
+        phone_host: Optional[str] = None,
+        bilateral_host: Optional[str] = None,
     ) -> None:
         """
         MagiClaw initialization.
@@ -49,7 +55,8 @@ class MagiClaw:
             mode (str): The mode to run MagiClaw in. (default: "standalone")
             loop_rate (int): The loop rate in Hz. (default: 30)
             phone_host (Optional[str]): The host address for the phone. (default: None)
-        
+            bilateral_host (Optional[str]): The host address for the bilateral communication. (default: None)
+
         Raises:
             ValueError: If the claw ID is invalid or not provided.
         """
@@ -119,7 +126,10 @@ class MagiClaw:
                 )
                 with bilateral_config_path.open("r") as f:
                     bilateral_params = yaml.load(f, Loader=yaml.Loader)
-                    self.zmq_cfg.set_bilateral_host(bilateral_params["host"])
+                    if bilateral_host is not None:
+                        self.zmq_cfg.set_bilateral_host(bilateral_host)
+                    else:
+                        self.zmq_cfg.set_bilateral_host(bilateral_params["host"])
             except FileNotFoundError as e:
                 self.logger.error(f"Failed to load configuration file: {e}")
                 raise e
@@ -193,34 +203,3 @@ class MagiClaw:
                     process.terminate()
                     process.join(timeout=1.0)
             self.logger.info("MagiClaw terminated.")
-
-
-if __name__ == "__main__":
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Run MagiClaw")
-    parser.add_argument(
-        "--id",
-        type=int,
-        default=0,
-        help="The ID of the MagiClaw (default: 0).",
-    )
-    parser.add_argument(
-        "--mode",
-        type=str,
-        choices=["teleop", "standalone"],
-        default="teleop",
-        help="Mode to run MagiClaw in, either 'teleop' or 'standalone'.",
-    )
-    parser.add_argument(
-        "--loop_rate",
-        type=int,
-        default=30,
-        help="The loop rate in Hz (default: 30).",
-    )
-    args = parser.parse_args()
-
-    # Initialize MagiClaw
-    magiclaw = MagiClaw(id=args.id, mode=args.mode, loop_rate=args.loop_rate)
-
-    # Run MagiClaw
-    magiclaw.run()

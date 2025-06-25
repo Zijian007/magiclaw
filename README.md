@@ -41,7 +41,7 @@ Before running MagiClaw, you need to modify the files in `configs/` according to
 To run MagiClaw, use the following command:
 
 ```bash
-run-magiclaw --id <id> --mode <mode> --loop_rate <loop_rate>
+run-magiclaw --id <id> --mode <mode> --loop_rate <loop_rate> --phone_host <phone_host> --bilateral_host <bilateral_host>
 ```
 
 For more details, refer to the [docs]().
