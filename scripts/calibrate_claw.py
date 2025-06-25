@@ -65,24 +65,24 @@ angle_min = 0
 # Loop to close and open the claw
 for i in range(5):
     print(f"Round {i + 1}/5")
-    
+
     # Close the claw
     print("Closing the claw...")
     claw.close()
     time.sleep(1)
-    
+
     # Read the motor status
     claw.read_motor_status()
     # Record the maximum angle
     angle_max += claw.motor_angle
     # Print the motor angle
     print(f"Motor angle: {claw.motor_angle:.2f} deg")
-    
+
     # Open the claw
     print("Opening the claw...")
     claw.open()
     time.sleep(1)
-    
+
     # Read the motor status
     claw.read_motor_status()
     # Record the minimum angle

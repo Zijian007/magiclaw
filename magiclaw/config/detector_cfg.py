@@ -10,6 +10,7 @@ This module contains the configuration for the detector.
 import os
 import yaml
 
+
 class DetectorConfig:
     """
     Detector configuration class.
@@ -81,7 +82,9 @@ class DetectorConfig:
         self.minMarkerDistanceRate = minMarkerDistanceRate
         self.markerBorderBits = markerBorderBits
         self.perspectiveRemovePixelPerCell = perspectiveRemovePixelPerCell
-        self.perspectiveRemoveIgnoredMarginPerCell = perspectiveRemoveIgnoredMarginPerCell
+        self.perspectiveRemoveIgnoredMarginPerCell = (
+            perspectiveRemoveIgnoredMarginPerCell
+        )
         self.maxErroneousBitsInBorderRate = maxErroneousBitsInBorderRate
         self.minOtsuStdDev = minOtsuStdDev
         self.cornerRefinementMethod = cornerRefinementMethod
@@ -92,11 +95,11 @@ class DetectorConfig:
         self.useAruco3Detection = useAruco3Detection
         self.minSideLengthCanonicalImg = minSideLengthCanonicalImg
         self.minMarkerLengthRatioOriginalImg = minMarkerLengthRatioOriginalImg
-    
+
     def read_config_file(self, file_path: str, root_dir: str = ".") -> None:
         """
         Read the camera configuration from a yaml file.
-        
+
         Args:
             file_path (str): The path to the yaml configuration file.
             root_dir (str): The root directory to resolve relative paths.

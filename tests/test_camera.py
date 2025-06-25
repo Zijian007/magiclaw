@@ -17,13 +17,12 @@ To run the script, use the following command:
 python test_camera.py --params_path <params_path> --headless --save_images
 ```
 
-where <params_path> is the path to the camera parameters file, `--headless` runs the script 
+where <params_path> is the path to the camera parameters file, `--headless` runs the script
 in headless mode (no GUI), and `--save_images` saves the camera frames as images.
 """
 
 import argparse
 import os
-import yaml
 
 # Configure OpenCV for headless environment BEFORE importing cv2
 os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"  # Disable Windows Media Foundation
@@ -38,7 +37,7 @@ from magiclaw.config import CameraConfig
 def camera_test(params_path: str, headless: bool = False, save_images: bool = False):
     """
     Test the camera.
-    
+
     Args:
         params_path (str): The path of the camera parameters.
         headless (bool): Run in headless mode (no GUI).
@@ -49,14 +48,14 @@ def camera_test(params_path: str, headless: bool = False, save_images: bool = Fa
     camera_cfg = CameraConfig()
     camera_cfg.read_config_file(params_path)
     camera_name = os.path.basename(params_path).split(".")[0]
-    
+
     # Initialize camera based on the mode
     if camera_cfg.mode == "usb":
         camera = UsbCamera(
             name=camera_name,
             camera_cfg=camera_cfg,
         )
-    elif camera_cfg.mode == "web": 
+    elif camera_cfg.mode == "web":
         camera = WebCamera(
             name=camera_name,
             camera_cfg=camera_cfg,
@@ -146,6 +145,7 @@ def camera_test(params_path: str, headless: bool = False, save_images: bool = Fa
 
     print("Camera test completed.")
 
+
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Camera connection test")
@@ -165,6 +165,6 @@ if __name__ == "__main__":
         help="Save camera frames as images",
     )
     args = parser.parse_args()
-    
+
     # Test camera
     camera_test(args.params_path, args.headless, args.save_images)

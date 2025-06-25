@@ -63,10 +63,10 @@ class PhoneConfig:
         Args:
             config_path (str): The path to the configuration file.
         """
-        
+
         with open(os.path.join(root_dir, file_path), "r") as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
-            
+
             for key, value in config.items():
                 if hasattr(self, key):
                     setattr(self, key, value)
@@ -74,7 +74,7 @@ class PhoneConfig:
                     for sub_key, sub_value in value.items():
                         if hasattr(self, f"{key}_{sub_key}"):
                             setattr(self, f"{key}_{sub_key}", sub_value)
-                            
+
     def set_host(self, host: str) -> None:
         """
         Set the host address for the phone.

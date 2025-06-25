@@ -15,7 +15,7 @@ from typing import Optional
 class ZMQConfig:
     """
     ZMQ configuration class.
-    
+
     Attributes:
         claw_id (int): The ID of the claw.
         public_host (str): The host address for the ZMQ connection.

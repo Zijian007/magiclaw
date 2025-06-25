@@ -39,6 +39,28 @@ from .utils.logging_utils import init_logger
 
 
 class MagiClaw:
+    """
+    MagiClaw class.
+
+    This class initializes the MagiClaw system with the given parameters and runs the necessary processes.
+
+    Attributes:
+        id (int): The ID of the claw.
+        mode (str): The mode to run MagiClaw in. Can be `standalone` or `teleop`.
+        loop_rate (int): The loop rate in Hz.
+        phone_host (Optional[str]): The host address for the phone.
+        bilateral_host (Optional[str]): The host address for the bilateral communication.
+        root_dir (pathlib.Path): The root directory of the MagiClaw package.
+        logger (logging.Logger): The logger for the MagiClaw system.
+        claw_cfg (ClawConfig): The configuration for the claw.
+        camera_0_cfg (CameraConfig): The configuration for camera 0.
+        camera_1_cfg (CameraConfig): The configuration for camera 1.
+        fingernet_cfg (FingerNetConfig): The configuration for the finger net.
+        phone_cfg (PhoneConfig): The configuration for the phone.
+        zmq_cfg (ZMQConfig): The configuration for ZeroMQ communication.
+        processes (list): List of processes to run.
+    """
+
     def __init__(
         self,
         id: int = 0,
@@ -48,7 +70,7 @@ class MagiClaw:
         bilateral_host: Optional[str] = None,
     ) -> None:
         """
-        MagiClaw initialization.
+        Initialize MagiClaw.
 
         Args:
             id (int): The ID of the claw.
@@ -56,9 +78,6 @@ class MagiClaw:
             loop_rate (int): The loop rate in Hz. (default: 30)
             phone_host (Optional[str]): The host address for the phone. (default: None)
             bilateral_host (Optional[str]): The host address for the bilateral communication. (default: None)
-
-        Raises:
-            ValueError: If the claw ID is invalid or not provided.
         """
 
         # Check if the claw ID is valid

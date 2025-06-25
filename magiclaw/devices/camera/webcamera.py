@@ -46,7 +46,9 @@ class WebCamera:
         self.mtx = np.array(camera_cfg.mtx)
         self.dist = np.array(camera_cfg.dist)
         if camera_cfg.host is None:
-            raise ValueError("Camera host is not set. Please check the configuration file.")
+            raise ValueError(
+                "Camera host is not set. Please check the configuration file."
+            )
         self.camera = CameraSubscriber(host=camera_cfg.host, port=camera_cfg.port)
         print(f"Resolution: {self.width}x{self.height}")
         print(f"Camera matrix:\n{self.mtx}")
@@ -89,7 +91,7 @@ class WebCamera:
         # Set the sharpen kernel
         self.sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
         # self.sharpen_kernel = np.ones((5, 5), np.float32) / 25
-        
+
         # Set the filter parameters
         self.filter_on = camera_cfg.filter_on
         self.filter_frame = camera_cfg.filter_frame
@@ -108,7 +110,9 @@ class WebCamera:
         self.init_rmat = [R.from_rotvec(rvec).as_matrix() for rvec in self.init_rvec]
 
         print(f"Initial pose: {self.init_pose}")
-        print(f"The finger motion will be calculated as reference pose base on this initial pose.")
+        print(
+            f"The finger motion will be calculated as reference pose base on this initial pose."
+        )
         print("ArUco Detector Initialization Done.")
         print("{:-^80}".format(""))
 
@@ -217,10 +221,12 @@ class WebCamera:
 
         # Check if the markers are detected
         if ids is None:
-            return np.ones([self.marker_num, 6])*1000, img
+            return np.ones([self.marker_num, 6]) * 1000, img
 
         # Estimate the pose using IPPE_SQUARE
-        rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(corners, self.marker_size, self.mtx, self.dist)
+        rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(
+            corners, self.marker_size, self.mtx, self.dist
+        )
         pose = np.hstack((tvec * 1000, rvec)).reshape(-1, 6)
 
         # Filter the pose
@@ -229,7 +235,9 @@ class WebCamera:
 
         # Draw the markers
         color_image_result = cv2.aruco.drawDetectedMarkers(img, corners, ids)
-        color_image_result = cv2.drawFrameAxes(img, self.mtx, self.dist, rvec, tvec, self.marker_size)
+        color_image_result = cv2.drawFrameAxes(
+            img, self.mtx, self.dist, rvec, tvec, self.marker_size
+        )
         # Return the pose and image
         return pose, color_image_result
 
@@ -297,7 +305,8 @@ class WebCamera:
         # Check if the pose is valid
         for i in range(len(pose)):
             if np.linalg.norm(pose[i, :3] - self.last_pose[i, :3]) > 20:
-                self.pose[i] = self.last_pose[i]  # Reset to last pose if the translation is too large
+                # If the pose is not valid, use the last pose
+                self.pose[i] = self.last_pose[i]
             else:
                 self.pose = pose
         self.last_pose = self.pose

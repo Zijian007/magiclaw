@@ -159,7 +159,7 @@ while True:
 
     # Display the frame
     cv2.imshow(args.name, img)
-    
+
     # Check for key presses
     key = cv2.waitKey(1)
     if key == 27:

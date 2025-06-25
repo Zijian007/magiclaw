@@ -19,7 +19,7 @@ def init_model(model_path: str, device: str = "auto") -> ort.InferenceSession:
     Returns:
         ort.InferenceSession: The loaded ONNX model.
     """
-    
+
     if not model_path.endswith(".onnx"):
         raise ValueError("\033[31mThe model path must end with .onnx\033[0m")
     if not os.path.exists(model_path):
@@ -30,12 +30,15 @@ def init_model(model_path: str, device: str = "auto") -> ort.InferenceSession:
     sess_options.inter_op_num_threads = 1
     sess_options.log_severity_level = 3
 
-    return ort.InferenceSession(model_path, sess_options, providers=[get_provider(device)])
+    return ort.InferenceSession(
+        model_path, sess_options, providers=[get_provider(device)]
+    )
+
 
 def get_provider(devices: str = "auto") -> str:
     """
     Get the device for ONNX model inference.
-    
+
     This function checks if CUDA, or Hailo are available,
     and returns the appropriate provider for ONNX model inference.
     If none of these providers are available, it defaults to CPUExecutionProvider.
@@ -45,9 +48,9 @@ def get_provider(devices: str = "auto") -> str:
     Raises:
         ValueError: If the specified device is not supported or available.
     """
-    
+
     available_providers = ort.get_available_providers()
-    
+
     if devices == "cuda":
         if "CUDAExecutionProvider" in available_providers:
             return "CUDAExecutionProvider"

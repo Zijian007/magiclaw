@@ -10,6 +10,7 @@ import psutil
 import logging
 from logging import Logger
 
+
 def init_logger(log_file_path: str) -> Logger:
     """
     Initialize the logger.
@@ -71,7 +72,7 @@ def check_system_resources(logger: Logger, fps: str) -> bool:
     logger.info(
         f"System status: Memory: {memory_percent}%, CPU: {cpu_percent}%, FPS: {fps}"
     )
-    
+
     gc.collect()  # Run garbage collection to free up memory
 
     # Check for critical conditions

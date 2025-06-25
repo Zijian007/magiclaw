@@ -50,7 +50,7 @@ class MotorConfig:
         self.Kd_b = Kd_b
         self.iq_max = iq_max
         self.angle_range = angle_range
-        
+
         self.angle_deadband = 10
         self.speed_deadband = 10
 

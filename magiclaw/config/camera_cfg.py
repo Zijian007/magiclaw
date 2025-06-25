@@ -12,10 +12,11 @@ import numpy as np
 import yaml
 from typing import Optional
 
+
 class CameraConfig:
     """
     Camera configuration class.
-    
+
     Attributes:
         mode (str): The mode of the camera. Can be "web" or "usb".
         host (str): The host address of the camera.
@@ -45,11 +46,13 @@ class CameraConfig:
         filter_on: bool = True,
         filter_frame: int = 5,
         marker2global_tvec: np.ndarray = np.array([0.0, 0.0, 0.0]),
-        marker2global_rmat: np.ndarray = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]),
+        marker2global_rmat: np.ndarray = np.array(
+            [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+        ),
     ) -> None:
         """
         Initialize the camera configuration.
-        
+
         Args:
             mode (str): The mode of the camera. Can be "web" or "usb".
             host (str): The host address of the camera.
@@ -65,7 +68,7 @@ class CameraConfig:
             marker2global_translation (np.ndarray): The translation vector from the marker to the global frame.
             marker2global_rotation (np.ndarray): The rotation vector from the marker to the global frame.
         """
-        
+
         self.mode = mode
         self.host = host
         self.port = port
@@ -79,21 +82,19 @@ class CameraConfig:
         self.filter_frame = filter_frame
         self.marker2global_tvec = marker2global_tvec
         self.marker2global_rmat = marker2global_rmat
-        
+
     def read_config_file(self, file_path: str, root_dir: str = ".") -> None:
         """
         Read the camera configuration from a yaml file.
-        
+
         Args:
             file_path (str): The path to the yaml configuration file.
             root_dir (str): The root directory to resolve relative paths.
         """
-        
+
         with open(os.path.join(root_dir, file_path), "r") as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
-            
+
             for key, value in config.items():
                 if hasattr(self, key):
                     setattr(self, key, value)
-        
-        

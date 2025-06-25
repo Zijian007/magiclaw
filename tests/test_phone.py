@@ -19,7 +19,7 @@ import cv2
 def phone_test(params_path: str, headless: bool = False, save_images: bool = False):
     """
     Test the phone.
-    
+
     Args:
         params_path (str): The path of the phone parameters.
         headless (bool): Run in headless mode (no GUI).
@@ -45,12 +45,14 @@ def phone_test(params_path: str, headless: bool = False, save_images: bool = Fal
         ],
         dtype=np.float32,
     )
-    
+
     color_img_list = []
     depth_img_list = []
     try:
         while True:
-            color_img, depth_img, depth_width, depth_height, local_pose, global_pose = phone_subscriber.subscribeMessage()
+            color_img, depth_img, depth_width, depth_height, local_pose, global_pose = (
+                phone_subscriber.subscribeMessage()
+            )
             # if color_img is not None:
             #     # Display the color image
             #     cv2.imshow("Color Image", color_img)
@@ -64,8 +66,10 @@ def phone_test(params_path: str, headless: bool = False, save_images: bool = Fal
             if global_pose is not None:
                 # Display the pose
                 global_pose = convert_pose(np.array(global_pose), conversion_matrix)
-                global_pose = R.from_quat(global_pose[3:]).as_euler('xyz', degrees=True)
-                print(f"Pose: {global_pose[0]:6.3f}, {global_pose[1]:6.3f}, {global_pose[2]:6.3f} (degrees)")
+                global_pose = R.from_quat(global_pose[3:]).as_euler("xyz", degrees=True)
+                print(
+                    f"Pose: {global_pose[0]:6.3f}, {global_pose[1]:6.3f}, {global_pose[2]:6.3f} (degrees)"
+                )
     except KeyboardInterrupt:
         print("Exiting...")
     # Release resources
@@ -77,7 +81,8 @@ def phone_test(params_path: str, headless: bool = False, save_images: bool = Fal
             cv2.imwrite(f"color_image_{i}.png", img)
         for i, img in enumerate(depth_img_list):
             cv2.imwrite(f"depth_image_{i}.png", img)
-            
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Phone Test")
     parser.add_argument(
