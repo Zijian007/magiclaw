@@ -31,7 +31,6 @@ classifiers = [
 dependencies = [
     "jupyter==1.1.1",
     "numpy==2.2.4",
-    "onnx==1.17.0",
     "onnxruntime==1.21.0",
     "opencv-contrib-python==4.11.0.86",
     "opencv-python==4.11.0.86",
