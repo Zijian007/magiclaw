@@ -1,8 +1,9 @@
 motor:
-  Kd: 0.0005
-  Kp_b: 0.0005
-  Kp_s: 2.0e-05
-  angle_range: 392.31
+  Kp_b: 5.0e-4
+  Kp_s: 5.0e-5
+  Kd_b: 7.0e-4
+  Kd_s: 1.0e-4
+  angle_range: 330
   bus_channel: can0
   bus_interface: socketcan
   iq_max: 10

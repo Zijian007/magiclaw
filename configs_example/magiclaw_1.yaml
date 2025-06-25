@@ -2,4 +2,4 @@ claw: configs/claw/claw_1.yaml
 phone: configs/phone/phone_1.yaml
 camera_0: configs/camera/maixcam-xxxx.yaml
 camera_1: configs/camera/maixcam-xxxx.yaml
-fingernet: models/FingerNet.onnx
+fingernet: models/FingerNet_surf.onnx

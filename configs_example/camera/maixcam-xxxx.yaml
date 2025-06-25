@@ -18,7 +18,7 @@ mtx:
   - - 0.000000
     - 0.000000
     - 1.000000
-marker_size: 0.008
+marker_size: 0.009
 filter_on: True
 filter_frame: 5
 marker2global_tvec:
