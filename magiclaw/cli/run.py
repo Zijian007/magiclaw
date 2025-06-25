@@ -32,6 +32,7 @@ the script with the environment directory, e.g., for a `miniconda` environment:
 import argparse
 from magiclaw import MagiClaw
 
+
 def main():
     """
     Main function to run MagiClaw.
@@ -60,24 +61,28 @@ def main():
         help="The loop rate in Hz (default: 30).",
     )
     parser.add_argument(
-        "--phone_host",
-        type=str,
-        required=False,
-        help="The host address for the phone."
+        "--phone_host", type=str, required=False, help="The host address for the phone."
     )
     parser.add_argument(
         "--bilateral_host",
         type=str,
         required=False,
-        help="The host address for the bilateral communication."
+        help="The host address for the bilateral communication.",
     )
     args = parser.parse_args()
 
     # Initialize MagiClaw
-    magiclaw = MagiClaw(id=args.id, mode=args.mode, loop_rate=args.loop_rate, phone_host=args.phone_host, bilateral_host=args.bilateral_host)
+    magiclaw = MagiClaw(
+        id=args.id,
+        mode=args.mode,
+        loop_rate=args.loop_rate,
+        phone_host=args.phone_host,
+        bilateral_host=args.bilateral_host,
+    )
 
     # Run MagiClaw
     magiclaw.run()
-    
+
+
 if __name__ == "__main__":
     main()

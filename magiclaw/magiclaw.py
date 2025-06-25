@@ -23,9 +23,9 @@ magiclaw.run()
 ```
 
 where `<id> is the MagiClaw's ID (corresponding to the `CAN` interface, default is 0), <mode> is the operation mode (
-including `standalone` and `teleop`, default is `standalone`), <loop_rate> is the loop rate in Hz (default is 30), 
-`<phone_host>` is the host address for the phone (overwrite the default value in the config file, optional),  and 
-`<bilateral_host>` is the host address for the bilateral communication (only required in `teleop` mode, overwrite the 
+including `standalone` and `teleop`, default is `standalone`), <loop_rate> is the loop rate in Hz (default is 30),
+`<phone_host>` is the host address for the phone (overwrite the default value in the config file, optional),  and
+`<bilateral_host>` is the host address for the bilateral communication (only required in `teleop` mode, overwrite the
 default value in the config file, optional).
 """
 
