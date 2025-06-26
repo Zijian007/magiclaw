@@ -109,7 +109,7 @@ def standalone_claw_process(
     finally:
         # Release claw resources
         claw.stop()
-        claw.release()
+        # claw.release()
         # Close ZMQ resources
         claw_publisher.close()
         return
@@ -295,26 +295,29 @@ def finger_process(
             loop_start = time.time()
 
             # Get the image and pose
-            pose, img = camera.readImageAndPose()
-            if pose[0, 0] > 999:
-                pose = np.zeros_like(pose)
-            # Convert the pose to the reference pose
-            pose_ref = camera.poseToReferece(pose)
-            # Convert the pose from the marker frame to the camera frame
-            pose_global = camera.poseAxisTransfer(pose_ref)
-            # Convert the pose to the euler angles
-            pose_euler = camera.poseVectorToEuler(pose_global)
+            try:
+                pose, img = camera.readImageAndPose()
+                if pose[0, 0] > 999:
+                    pose = np.zeros_like(pose)
+                # Convert the pose to the reference pose
+                pose_ref = camera.poseToReferece(pose)
+                # Convert the pose from the marker frame to the camera frame
+                pose_global = camera.poseAxisTransfer(pose_ref)
+                # Convert the pose to the euler angles
+                pose_euler = camera.poseVectorToEuler(pose_global)
 
-            # Predict the force and node
-            force, node = fingernet.infer(pose_euler)
+                # Predict the force and node
+                force, node = fingernet.infer(pose_euler)
 
-            # Publish the data
-            finger_publisher.publishMessage(
-                img_bytes=cv2.imencode(".jpg", img, jpeg_params)[1].tobytes(),
-                pose=pose_euler.flatten().tolist(),
-                force=force.flatten().tolist(),
-                node=node.flatten().tolist(),
-            )
+                # Publish the data
+                finger_publisher.publishMessage(
+                    img_bytes=cv2.imencode(".jpg", img, jpeg_params)[1].tobytes(),
+                    pose=pose_euler.flatten().tolist(),
+                    force=force.flatten().tolist(),
+                    node=node.flatten().tolist(),
+                )
+            except Exception as e:
+                logger.error(f"Finger {finger_index} process: {str(e)}")
 
             # Fix the loop time
             loop_end = time.time()
@@ -325,8 +328,6 @@ def finger_process(
         logger.info(f"Finger {finger_index} process terminated by user")
     except MemoryError:
         logger.error(f"Memory out, cleaning up...")
-    except Exception as e:
-        logger.error(f"Finger {finger_index} process: {str(e)}")
     finally:
         # Release camera resources
         camera.release()
