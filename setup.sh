@@ -1,4 +1,6 @@
 #!/bin/bash
+# -*- coding: utf-8 -*-
+
 set -e
 set -x
 
@@ -38,6 +40,7 @@ EOF
 
 # Update package lists and upgrade installed packages
 echo "Updating package lists and upgrading installed packages..."
+sudo systemctl stop packagekit
 sudo apt update && sudo apt upgrade -y
 
 ### Step 2: Install Miniconda
@@ -158,9 +161,9 @@ sudo tee /etc/NetworkManager/conf.d/10-ignore-wlan0.conf > /dev/null <<EOF
 unmanaged-devices=interface-name:wlan0
 EOF
 
-# Set Wi-Fi country and bring up wlan0
-echo "Setting Wi-Fi country to US and bringing up wlan0..."
-sudo iw reg set US
+# Bring up wlan0
+# Note that before bringing up wlan0, wifi country must be set
+echo "Bringing up wlan0..."
 sudo ip link set wlan0 up
 
 # Enable and start Wi-Fi services
@@ -247,7 +250,6 @@ EOF
 
 echo "Enabling and starting CAN setup service..."
 sudo systemctl enable can-setup.service
-sudo systemctl start can-setup.service
 
 ### Step 6: Configure cooling fan
 echo "=========================================="
