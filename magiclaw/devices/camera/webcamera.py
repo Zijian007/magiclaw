@@ -274,10 +274,11 @@ class WebCamera:
         try:
             img = self.camera.subscribeMessage()
             img = cv2.imdecode(img, cv2.IMREAD_COLOR)
-        except ValueError:
+        except Exception as e:
             raise ValueError(
-                "Cannot read the image from the camera. Please check the camera connection."
+                f"Error reading image from camera: {e}. Please check the camera connection."
             )
+        
         return img
 
     def readImageAndPose(self) -> Tuple[np.ndarray, np.ndarray]:
@@ -295,7 +296,7 @@ class WebCamera:
         # Read the image from the camera
         try:
             img = self.readImage()
-        except ValueError as e:
+        except Exception as e:
             raise ValueError(
                 f"Error reading image: {e}. Please check the camera connection."
             )
