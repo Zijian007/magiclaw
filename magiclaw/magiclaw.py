@@ -113,7 +113,7 @@ class MagiClaw:
             with magiclaw_config_path.open("r") as f:
                 params = yaml.load(f, Loader=yaml.Loader)
 
-            self.claw_cfg = ClawConfig()
+            self.claw_cfg = ClawConfig(claw_id=self.id)
             self.claw_cfg.read_config_file(params["claw"], root_dir=str(self.root_dir))
             self.camera_0_cfg = CameraConfig()
             self.camera_0_cfg.read_config_file(
@@ -126,7 +126,7 @@ class MagiClaw:
             self.fingernet_cfg = FingerNetConfig(
                 model_path=str(self.root_dir.joinpath(params["fingernet"]))
             )
-            self.phone_cfg = PhoneConfig()
+            self.phone_cfg = PhoneConfig(phone_id=self.id)
             self.phone_cfg.read_config_file(
                 params["phone"], root_dir=str(self.root_dir)
             )
