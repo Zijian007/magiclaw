@@ -260,11 +260,13 @@ def finger_process(
         camera = UsbCamera(
             name=f"camera_{finger_index}",
             camera_cfg=camera_cfg,
+            logger=logger,
         )
     elif camera_cfg.mode == "web":
         camera = WebCamera(
             name=f"camera_{finger_index}",
             camera_cfg=camera_cfg,
+            logger=logger,
         )
     else:
         raise ValueError("\033[31mUnsupported camera mode!\033[0m")

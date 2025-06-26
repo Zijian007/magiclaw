@@ -5,7 +5,8 @@ import sys
 import time
 import cv2
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Optional
+from logging import Logger
 from collections import deque
 from scipy.spatial.transform import Rotation as R
 from magiclaw.modules.zmq import CameraSubscriber
@@ -25,6 +26,7 @@ class WebCamera:
         name: str,
         camera_cfg: CameraConfig,
         detector_cfg: DetectorConfig = DetectorConfig(),
+        logger: Optional[Logger] = None,
     ) -> None:
         """
         Initialize the WebCamera.
@@ -33,6 +35,7 @@ class WebCamera:
             name (str): The name of the camera.
             camera_cfg (CameraConfig): The camera configuration.
             detector_cfg (DetectorConfig): The detector configuration.
+            logger (Optional[Logger]): The logger for logging messages. If None, no logging will be done.
         """
 
         # Camera initialization
@@ -102,6 +105,13 @@ class WebCamera:
         self.img = np.zeros((self.height, self.width, 3))
         self.first_frame = True
 
+        # Check if the camera is connected
+        while not self._is_connected():
+            logger.warning(
+                f"Camera {self.name}: not connected. Retrying in 1 second..."
+            )
+            time.sleep(1)
+        
         # Init pose
         print(f"Calculating the initial pose of {self.name} ...")
         self.init_pose = self._calculateInitPose()
@@ -240,6 +250,23 @@ class WebCamera:
         )
         # Return the pose and image
         return pose, color_image_result
+    
+    def _is_connected(self) -> bool:
+        """
+        Check if the camera is connected.
+
+        The function will return True if the camera is connected, otherwise False.
+        This function is used to check the connection of the camera.
+
+        Returns:
+            bool: True if the camera is connected, otherwise False.
+        """
+        
+        try:
+            img = self.readImage()
+            return True if img is not None else False
+        except Exception:
+            return False
 
     def release(self) -> None:
         """
@@ -274,9 +301,9 @@ class WebCamera:
         try:
             img = self.camera.subscribeMessage()
             img = cv2.imdecode(img, cv2.IMREAD_COLOR)
-        except Exception as e:
+        except Exception:
             raise ValueError(
-                f"Error reading image from camera: {e}. Please check the camera connection."
+                f"Error reading image from camera. Please check the camera connection."
             )
         
         return img

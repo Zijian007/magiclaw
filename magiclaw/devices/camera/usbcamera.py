@@ -5,7 +5,8 @@ import sys
 import time
 import cv2
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Optional
+from logging import Logger
 from collections import deque
 from scipy.spatial.transform import Rotation as R
 from magiclaw.config import CameraConfig, DetectorConfig
@@ -24,6 +25,7 @@ class UsbCamera:
         name: str,
         camera_cfg: CameraConfig,
         detector_cfg: DetectorConfig = DetectorConfig(),
+        logger: Optional[Logger] = None,
     ) -> None:
         """
         Initialize the UsbCamera.
@@ -95,6 +97,13 @@ class UsbCamera:
         self.img = np.zeros((self.height, self.width, 3))
         self.first_frame = True
 
+        # Check if the camera is connected
+        while not self._is_connected():
+            logger.warning(
+                f"Camera {self.name}: not connected. Retrying in 1 second..."
+            )
+            time.sleep(1)
+        
         # Init pose
         print(f"Calculating the initial pose of {self.name} ...")
         self.init_pose = self._calculateInitPose()
@@ -228,6 +237,23 @@ class UsbCamera:
         # Return the pose and image
         return pose, color_image_result
     
+    def _is_connected(self) -> bool:
+        """
+        Check if the camera is connected.
+
+        The function will return True if the camera is connected, otherwise False.
+        This function is used to check the connection of the camera.
+
+        Returns:
+            bool: True if the camera is connected, otherwise False.
+        """
+        
+        try:
+            img = self.readImage()
+            return True if img is not None else False
+        except Exception:
+            return False
+    
     def release(self) -> None:
         """
         Release the camera.
@@ -261,8 +287,9 @@ class UsbCamera:
         ret, img = self.camera.read()
         # Check if the image is read
         if not ret:
-            print("\033[31mCannot read the image from the camera.\033[0m")
-            sys.exit()
+            raise ValueError(
+                f"Error reading image from camera. Please check the camera connection."
+            )
         return img
 
     def readImageAndPose(self) -> Tuple[np.ndarray, np.ndarray]:
