@@ -109,6 +109,7 @@ def standalone_claw_process(
     finally:
         # Release claw resources
         claw.stop()
+        claw.release()
         # Close ZMQ resources
         claw_publisher.close()
         return

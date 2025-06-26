@@ -29,12 +29,12 @@ os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"  # Disable Windows Media Founda
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "video_codec;h264"
 
 # Import CV2 after environment setup
-import cv2
+# import cv2
 from magiclaw.devices.camera import UsbCamera, WebCamera
 from magiclaw.config import CameraConfig
 
 
-def camera_test(params_path: str, headless: bool = False, save_images: bool = False):
+def camera_test(name: str, headless: bool = False, save_images: bool = False):
     """
     Test the camera.
 
@@ -46,8 +46,8 @@ def camera_test(params_path: str, headless: bool = False, save_images: bool = Fa
 
     # Initialize camera
     camera_cfg = CameraConfig()
-    camera_cfg.read_config_file(params_path)
-    camera_name = os.path.basename(params_path).split(".")[0]
+    camera_cfg.read_config_file(os.path.join("configs", "camera", name + ".yaml"))
+    camera_name = name
 
     # Initialize camera based on the mode
     if camera_cfg.mode == "usb":
@@ -80,7 +80,7 @@ def camera_test(params_path: str, headless: bool = False, save_images: bool = Fa
         if has_display:
             # Don't even try to use imshow if not in a graphical environment
             try:
-                cv2.namedWindow(camera_name, cv2.WINDOW_NORMAL)
+                # cv2.namedWindow(camera_name, cv2.WINDOW_NORMAL)
                 print("OpenCV GUI initialized successfully")
             except Exception as e:
                 print(f"Failed to initialize OpenCV GUI: {e}")
@@ -111,26 +111,26 @@ def camera_test(params_path: str, headless: bool = False, save_images: bool = Fa
             # Save images periodically if requested
             if (save_images or headless) and output_dir and frame_count % 30 == 0:
                 img_path = os.path.join(output_dir, f"frame_{frame_count:04d}.jpg")
-                cv2.imwrite(img_path, img)
+                # cv2.imwrite(img_path, img)
                 print(f"Saved image to {img_path}")
 
             # Display the image if we have a display
-            if has_display and not headless:
-                try:
-                    cv2.imshow(camera_name, img)
-                    key = cv2.waitKey(1)
-                    if key == 27 or key == ord("q"):  # ESC or 'q' key
-                        print("User requested exit")
-                        break
-                except Exception as e:
-                    print(f"Display error: {e}")
-                    has_display = False
-                    print("Switching to headless mode...")
-            else:
-                # Small delay to prevent CPU overuse
-                import time
+            # if has_display and not headless:
+            #     try:
+            #         cv2.imshow(camera_name, img)
+            #         key = cv2.waitKey(1)
+            #         if key == 27 or key == ord("q"):  # ESC or 'q' key
+            #             print("User requested exit")
+            #             break
+            #     except Exception as e:
+            #         print(f"Display error: {e}")
+            #         has_display = False
+            #         print("Switching to headless mode...")
+            # else:
+            #     # Small delay to prevent CPU overuse
+            #     import time
 
-                time.sleep(0.05)
+            #     time.sleep(0.05)
 
     except KeyboardInterrupt:
         print("\nUser interrupted. Exiting...")
@@ -138,8 +138,8 @@ def camera_test(params_path: str, headless: bool = False, save_images: bool = Fa
         print(f"Error occurred: {e}")
     finally:
         # Clean up
-        if has_display and not headless:
-            cv2.destroyAllWindows()
+        # if has_display and not headless:
+        #     cv2.destroyAllWindows()
         camera.release()
         print("Camera released.")
 
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Camera connection test")
     parser.add_argument(
-        "--params_path",
+        "--name",
         type=str,
         help="The path of the camera parameters.",
     )
@@ -167,4 +167,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Test camera
-    camera_test(args.params_path, args.headless, args.save_images)
+    camera_test(args.name, args.headless, args.save_images)
