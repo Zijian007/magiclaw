@@ -7,6 +7,10 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-3DA639?logo=open-source-initiative&logoColor=white" /></a>
 </p>
 
+<p align="center">
+  <img src="docs/assets/banner.jpg" alt="MagiClaw Banner" />
+</p>
+
 ## ✨ Overview
 
 MagiClaw is a versatile human-robot interactive manipulation system designed by [Design and Learning Research Group (DLRG)](https://ancorasir.com) at [SUSTech](https://www.sustech.edu.cn/en/).
