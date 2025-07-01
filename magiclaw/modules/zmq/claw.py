@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+import re
 import zmq
+import pathlib
 from typing import Tuple
 from datetime import datetime
 from magiclaw.modules.protobuf import claw_msg_pb2
@@ -33,11 +35,17 @@ class ClawPublisher:
         # Bind the address
         self.publisher.bind(f"tcp://{host}:{port}")
 
-        print("Package Claw")
-        print("Message Claw")
-        print(
-            "{\n\tdouble timestamp = 1;\n\tfloat angle = 2;\n\tfloat speed = 3;\n\tfloat iq = 4;\n\tfloat temperature = 5;\n}"
+        # Read the protobuf definition for Claw message
+        with open(
+            pathlib.Path(__file__).parent / "protobuf/claw_msg.proto",
+        ) as f:
+            lines = f.read()
+        messages = re.search(
+            r"message\s+Claw\s*{{(.*?)}}", lines, re.DOTALL
         )
+        body = messages.group(1)
+        print("Message Claw")
+        print("{\n" + body + "\n}")
 
         print("Claw Publisher Initialization Done.")
         print("{:-^80}".format(""))
@@ -121,11 +129,17 @@ class ClawSubscriber:
         self.timeout = timeout
         
 
-        print("Package Claw")
-        print("Message Claw")
-        print(
-            "{\n\tdouble timestamp = 1;\n\tfloat angle = 2;\n\tfloat speed = 3;\n\tfloat iq = 4;\n\tfloat temperature = 5;\n}"
+        # Read the protobuf definition for Claw message
+        with open(
+            pathlib.Path(__file__).parent / "protobuf/claw_msg.proto",
+        ) as f:
+            lines = f.read()
+        messages = re.search(
+            r"message\s+Claw\s*{{(.*?)}}", lines, re.DOTALL
         )
+        body = messages.group(1)
+        print("Message Claw")
+        print("{\n" + body + "\n}")
 
         print("Claw Subscriber Initialization Done.")
         print("{:-^80}".format(""))

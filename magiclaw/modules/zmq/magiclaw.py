@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+import re
 import zmq
+import pathlib
 import numpy as np
 from typing import Tuple
 from datetime import datetime
@@ -34,19 +36,19 @@ class MagiClawPublisher:
         # Bind the address
         self.publisher.bind(f"tcp://{host}:{port}")
 
-        print("Package Claw")
-        print("Message Finger")
-        print(
-            "{\n\tbytes img = 1;\n\trepeated float pose = 2;\n\trepeated float force = 3;\n\trepeated float node = 4;\n}"
+        # Read the protobuf definition for MagiClaw message
+        with open(
+            pathlib.Path(__file__).parent / "protobuf/magiclaw_msg.proto",
+        ) as f:
+            lines = f.read()
+        messages = re.search(
+            r"message\s+MagiClaw\s*{{(.*?)}}", lines, re.DOTALL
         )
-        print("Message Phone")
-        print("{\n\tbytes color_img = 1;\n\trepeated int32 depth_img = 2\n}")
-        print("Message Claw")
-        print(
-            "{\n\tdouble timestamp = 1;\n\tfloat angle = 2;\n\tfloat speed = 3;\n\tfloat iq = 4;\n\tFinger finger_0 = 5;\n\tFinger finger_1 = 6;\n}"
-        )
+        body = messages.group(1)
+        print("message MagiClaw")
+        print("{\n" + body + "\n}")
 
-        print("Claw Publisher Initialization Done.")
+        print("MagiClaw Publisher Initialization Done.")
         print("{:-^80}".format(""))
 
     def publishMessage(
@@ -145,25 +147,17 @@ class MagiClawSubscriber:
         # Subscribe all messages
         self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
         
-        print("Package Claw")
-        print("Message Motor")
-        print(
-            "{\n\tfloat angle = 1;\n\tfloat speed = 2;\n\tfloat iq = 3;\n\tint32 temperature = 4;\n}"
+        # Read the protobuf definition for MagiClaw message
+        with open(
+            pathlib.Path(__file__).parent / "protobuf/magiclaw_msg.proto",
+        ) as f:
+            lines = f.read()
+        messages = re.search(
+            r"message\s+MagiClaw\s*{{(.*?)}}", lines, re.DOTALL
         )
-        print("Message Claw")
-        print("{\n\tfloat angle = 1;\n\tMotor motor = 2;\n}")
-        print("Message Finger")
-        print(
-            "{\n\tbytes img = 1;\n\trepeated float pose = 2;\n\trepeated float force = 3;\n\trepeated float node = 4;\n}"
-        )
-        print("Message Phone")
-        print(
-            "{\n\tbytes color_img = 1;\n\trepeated int32 depth_img = 2\n\trepeated int32 depth_width = 3\n\trepeated int32 depth_height = 4\n}"
-        )
-        print("Message MagiClaw")
-        print(
-            "{\n\tfloat timestamp = 1;\n\tClaw claw = 2;\n\tFinger finger_0 = 3;\n\tFinger finger_1 = 4;\n\tPhone phone = 5;\n}"
-        )
+        body = messages.group(1)
+        print("message MagiClaw")
+        print("{\n" + body + "\n}")
 
         print("Claw Subscriber Initialization Done.")
         print("{:-^80}".format(""))

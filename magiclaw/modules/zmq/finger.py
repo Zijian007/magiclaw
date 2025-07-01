@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+import re
 import zmq
+import pathlib
 import numpy as np
 from typing import Tuple
 from datetime import datetime
@@ -34,11 +36,17 @@ class FingerPublisher:
         # Bind the address
         self.publisher.bind(f"tcp://{host}:{port}")
 
-        print("Package Finger")
-        print("Message Finger")
-        print(
-            "{\n\tbytes img = 1;\n\trepeated float pose = 2;\n\trepeated float force = 3;\n\trepeated float node = 4;\n}"
+        # Read the protobuf definition for Finger message
+        with open(
+            pathlib.Path(__file__).parent / "protobuf/finger_msg.proto",
+        ) as f:
+            lines = f.read()
+        messages = re.search(
+            r"message\s+Finger\s*{{(.*?)}}", lines, re.DOTALL
         )
+        body = messages.group(1)
+        print("Message Finger")
+        print("{\n" + body + "\n}")
 
         print("Finger Publisher Initialization Done.")
         print("{:-^80}".format(""))
@@ -117,12 +125,17 @@ class FingerSubscriber:
         self.poller.register(self.subscriber, zmq.POLLIN)
         self.timeout = timeout
         
-
-        print("Package Finger")
-        print("Message Finger")
-        print(
-            "{\n\tbytes img = 1;\n\trepeated float pose = 2;\n\trepeated float force = 3;\n\trepeated float node = 4;\n}"
+        # Read the protobuf definition for Finger message
+        with open(
+            pathlib.Path(__file__).parent / "protobuf/finger_msg.proto",
+        ) as f:
+            lines = f.read()
+        messages = re.search(
+            r"message\s+Finger\s*{{(.*?)}}", lines, re.DOTALL
         )
+        body = messages.group(1)
+        print("Message Finger")
+        print("{\n" + body + "\n}")
 
         print("Finger Subscriber Initialization Done.")
         print("{:-^80}".format(""))

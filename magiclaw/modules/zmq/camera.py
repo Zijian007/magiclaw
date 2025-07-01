@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import sys
+import re
 import zmq
+import pathlib
 import numpy as np
 from magiclaw.modules.protobuf import cam_msg_pb2
 # import cam_msg_pb2  # Assuming cam_msg_pb2 is generated from cam_msg.proto
@@ -44,9 +45,17 @@ class CameraSubscriber:
         self.poller.register(self.subscriber, zmq.POLLIN)
         self.timeout = timeout
 
-        print("Package Camera")
-        print("Message Camera")
-        print("{\n\tbytes img = 1;\n}")
+        # Read the protobuf definition for Camera message
+        with open(
+            pathlib.Path(__file__).parent / "protobuf/camera_msg.proto",
+        ) as f:
+            lines = f.read()
+        messages = re.search(
+            r"message\s+Camera\s*{{(.*?)}}", lines, re.DOTALL
+        )
+        body = messages.group(1)
+        print("message Camera")
+        print("{\n" + body + "\n}")
 
         print("Camera Subscriber Initialization Done.")
 

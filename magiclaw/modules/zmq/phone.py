@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+import re
 import zmq
+import pathlib
 import numpy as np
 from typing import Tuple
 from datetime import datetime
@@ -34,11 +36,17 @@ class PhonePublisher:
         # Bind the address
         self.publisher.bind(f"tcp://{host}:{port}")
 
-        print("Package Phone")
-        print("Message Phone")
-        print(
-            "{\n\tbytes img = 1;\n\trepeated float pose = 2;\n\trepeated float force = 3;\n\trepeated float node = 4;\n}"
+        # Read the protobuf definition for Phone message
+        with open(
+            pathlib.Path(__file__).parent / "protobuf/phone_msg.proto",
+        ) as f:
+            lines = f.read()
+        messages = re.search(
+            r"message\s+Phone\s*{{(.*?)}}", lines, re.DOTALL
         )
+        body = messages.group(1)
+        print("Message Phone")
+        print("{\n" + body + "\n}")
 
         print("Phone Publisher Initialization Done.")
         print("{:-^80}".format(""))
@@ -120,11 +128,17 @@ class PhoneSubscriber:
         self.poller.register(self.subscriber, zmq.POLLIN)
         self.timeout = timeout
 
-        print("Package Phone")
-        print("Message Phone")
-        print(
-            "{\n\tbytes img = 1;\n\trepeated float pose = 2;\n\trepeated float force = 3;\n\trepeated float node = 4;\n}"
+        # Read the protobuf definition for Phone message
+        with open(
+            pathlib.Path(__file__).parent / "protobuf/phone_msg.proto",
+        ) as f:
+            lines = f.read()
+        messages = re.search(
+            r"message\s+Phone\s*{{(.*?)}}", lines, re.DOTALL
         )
+        body = messages.group(1)
+        print("Message Phone")
+        print("{\n" + body + "\n}")
 
         print("Phone Subscriber Initialization Done.")
         print("{:-^80}".format(""))
