@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-import sys
 import time
 import cv2
 import numpy as np
@@ -18,6 +17,33 @@ class UsbCamera:
 
     The class is to get the image from a usb camera and detect the ArUco markers.
     The poses of the markers are estimated and filtered.
+    
+    Attributes:
+        name (str): The name of the camera.
+        mode (str): The mode of the camera, default is "usb".
+        width (int): The width of the camera image.
+        height (int): The height of the camera image.
+        mtx (np.ndarray): The camera matrix.
+        dist (np.ndarray): The camera distortion coefficients.
+        id (int): The camera id.
+        camera (cv2.VideoCapture): The OpenCV video capture object.
+        detector (cv2.aruco.ArucoDetector): The ArUco detector object.
+        aruco_estimate_params (cv2.aruco.EstimateParameters): The ArUco estimate parameters.
+        marker_size (float): The size of the ArUco marker in meters.
+        transfer_tvec (np.ndarray): The translation vector from marker frame to global frame.
+        transfer_rmat (np.ndarray): The rotation matrix from marker frame to global frame.
+        pose (np.ndarray): The current pose of the marker.
+        filter_on (bool): Whether to apply pose filtering.
+        filter_frame (int): The number of frames to use for filtering.
+        last_pose (np.ndarray): The last pose of the marker.
+        img (np.ndarray): The current image captured by the camera.
+        first_frame (bool): Whether this is the first frame captured.
+        clahe (cv2.CLAHE): The Contrast Limited Adaptive Histogram Equalization object.
+        sharpen_kernel (np.ndarray): The kernel for sharpening the image.
+        init_pose (np.ndarray): The initial pose of the marker.
+        init_tvec (np.ndarray): The initial translation vector.
+        init_rvec (np.ndarray): The initial rotation vector.
+        init_rmat (list): The initial rotation matrices for each marker.
     """
     
     def __init__(
