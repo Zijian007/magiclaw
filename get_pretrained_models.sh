@@ -30,9 +30,11 @@ echo "Downloading model to: $model_path"
 # Use curl to download the model and show the progress bar
 curl -L "$onnx_url" -o "$model_path" -#
 
+echo "==========================================="
 if [ $? -eq 0 ]; then
   echo "✅ Model downloaded successfully: $model_path"
 else
   echo "❌ Download failed. Please check the Internet connection."
   echo "🔄 Please try again later or check the URL."
 fi
+echo "==========================================="
