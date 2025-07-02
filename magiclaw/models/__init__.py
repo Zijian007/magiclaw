@@ -15,15 +15,18 @@ To use the FingerNet model, you can initialize the FingerNet class by:
 
 ```
 from magiclaw.models.fingernet import FingerNet
+from magiclaw.config import FingerNetConfig
 
 finger_net = FingerNet(
-    name="FingerNet",
-    model_path=<path_to_your_model>,
-    device="auto"
+    fingernet_cfg=FingerNetConfig(
+        name="FingerNet",
+        model_path="<model_path>",
+        device="auto"
+    )
 )
 ```
 
-where `<path_to_your_model>` is the path to your ONNX model file.
+where `<model_path>` is the path of the ONNX model file.
 
 To run inference, you can use the `infer` method of the `FingerNet` class.
 
@@ -34,7 +37,7 @@ force, node = finger_net.infer(motion)
 where `motion` (np.ndarray) is the input motion data, and `force` (np.ndarray) and `node` (np.ndarray) are the 
 output force on the bottom surface and the node displacement of the finger, respectively.
 
-For more information, please refer to https://github.com/asMagiClaw/metafinger
+For more information, please refer to https://github.com/asMagiClaw/meta-finger
 """
 
 from .fingernet import FingerNet

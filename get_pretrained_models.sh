@@ -12,7 +12,7 @@ else
 fi
 
 # Download the model file
-onnx_url="Your model file URL"
+onnx_url="Model file URL"
 model_name="FingerNet.onnx"
 
 echo "Starting to download the model..."

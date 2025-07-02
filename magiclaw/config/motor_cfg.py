@@ -14,6 +14,21 @@ import yaml
 class MotorConfig:
     """
     Motor configuration class.
+    
+    This class is used to configure the motor parameters such as ID, bus interface, gains, and limits.
+    
+    Attributes:
+        id (int): The ID of the motor.
+        bus_interface (str): The bus interface of the motor.
+        bus_channel (str): The bus channel of the motor.
+        Kp_s (float): The proportional gain for spring control.
+        Kp_b (float): The proportional gain for bilateral control.
+        Kd_s (float): The derivative gain for spring control.
+        Kd_b (float): The derivative gain for bilateral control.
+        iq_max (float): The maximum current for the motor.
+        angle_range (float): The range of the motor angle.
+        angle_deadband (int): The deadband for the motor angle.
+        speed_deadband (int): The deadband for the motor speed.
     """
 
     def __init__(
@@ -69,3 +84,17 @@ class MotorConfig:
             for key, value in config.items():
                 if hasattr(self, key):
                     setattr(self, key, value)
+                    
+    def set(self, name: str, value) -> None:
+        """
+        Set an attribute of the motor configuration.
+
+        Args:
+            attr_name (str): The name of the attribute to set.
+            value: The value to set for the attribute.
+        """
+        
+        if hasattr(self, name):
+            setattr(self, name, value)
+        else:
+            raise AttributeError(f"MotorConfig has no attribute '{name}'")

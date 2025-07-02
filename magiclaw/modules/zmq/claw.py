@@ -9,10 +9,25 @@ from magiclaw.modules.protobuf import claw_msg_pb2
 
 
 class ClawPublisher:
+    """
+    ClawPublisher class.
+
+    This class is used to publish claw messages using ZeroMQ.
+
+    Attributes:
+        context (zmq.Context): The ZeroMQ context.
+        publisher (zmq.Socket): The ZeroMQ publisher socket.
+    """
+
     def __init__(
-        self, host: str, port: int, hwm: int = 1, conflate: bool = True
+        self,
+        host: str,
+        port: int,
+        hwm: int = 1,
+        conflate: bool = True,
     ) -> None:
-        """Publisher initialization.
+        """
+        Publisher initialization.
 
         Args:
             host (str): The host address of the publisher.
@@ -40,9 +55,7 @@ class ClawPublisher:
             pathlib.Path(__file__).parent / "protobuf/claw_msg.proto",
         ) as f:
             lines = f.read()
-        messages = re.search(
-            r"message\s+Claw\s*{{(.*?)}}", lines, re.DOTALL
-        )
+        messages = re.search(r"message\s+Claw\s*{{(.*?)}}", lines, re.DOTALL)
         body = messages.group(1)
         print("Message Claw")
         print("{\n" + body + "\n}")
@@ -59,13 +72,16 @@ class ClawPublisher:
         motor_iq: float = 0.0,
         motor_temperature: int = 0,
     ) -> None:
-        """Publish the message.
+        """
+        Publish the message.
 
         Args:
-            img: The image captured by the camera.
-            pose: The pose of the marker.
-            force: The force on the bottom surface of the finger.
-            node: The node displacement of the finger.
+            claw_angle (float): The angle of the claw. Default is 0.0.
+            motor_angle (float): The angle of the motor. Default is 0.0.
+            motor_angle_percent (float): The angle percent of the motor. Default is 0.0.
+            motor_speed (float): The speed of the motor. Default is 0.0.
+            motor_iq (float): The current of the motor in IQ format. Default is 0.0.
+            motor_temperature (int): The temperature of the motor in Celsius. Default is 0.
         """
 
         # Set the message
@@ -82,7 +98,10 @@ class ClawPublisher:
         self.publisher.send(claw.SerializeToString())
 
     def close(self):
-        """Close ZMQ socket and context to prevent memory leaks."""
+        """
+        Close ZMQ socket and context.
+        """
+        
         if hasattr(self, "publisher") and self.publisher:
             self.publisher.close()
         if hasattr(self, "context") and self.context:
@@ -90,6 +109,18 @@ class ClawPublisher:
 
 
 class ClawSubscriber:
+    """
+    ClawSubscriber class.
+
+    This class is used to subscribe to claw messages using ZeroMQ.
+
+    Attributes:
+        context (zmq.Context): The ZeroMQ context.
+        subscriber (zmq.Socket): The ZeroMQ subscriber socket.
+        poller (zmq.Poller): The ZeroMQ poller for the subscriber.
+        timeout (int): Maximum time to wait for a message in milliseconds.
+    """
+
     def __init__(
         self,
         host: str,
@@ -98,7 +129,8 @@ class ClawSubscriber:
         conflate: bool = True,
         timeout: int = 100,
     ) -> None:
-        """Subscriber initialization.
+        """
+        Subscriber initialization.
 
         Args:
             host (str): The host address of the subscriber.
@@ -127,16 +159,13 @@ class ClawSubscriber:
         self.poller = zmq.Poller()
         self.poller.register(self.subscriber, zmq.POLLIN)
         self.timeout = timeout
-        
 
         # Read the protobuf definition for Claw message
         with open(
             pathlib.Path(__file__).parent / "protobuf/claw_msg.proto",
         ) as f:
             lines = f.read()
-        messages = re.search(
-            r"message\s+Claw\s*{{(.*?)}}", lines, re.DOTALL
-        )
+        messages = re.search(r"message\s+Claw\s*{{(.*?)}}", lines, re.DOTALL)
         body = messages.group(1)
         print("Message Claw")
         print("{\n" + body + "\n}")
@@ -145,23 +174,26 @@ class ClawSubscriber:
         print("{:-^80}".format(""))
 
     def subscribeMessage(self) -> Tuple[float, float, float, float, float, int]:
-        """Subscribe the message.
-
-        Args:
-            timeout: Maximum time to wait for a message in milliseconds. Default is 100ms.
+        """
+        Subscribe the message.
 
         Returns:
-            angle, speed, iq, temperature: The claw status data.
+            angle (float): The angle of the claw.
+            motor_angle (float): The angle of the motor.
+            motor_angle_percent (float): The angle percent of the motor.
+            motor_speed (float): The speed of the motor.
+            motor_iq (float): The current of the motor in IQ format.
+            motor_temperature (int): The temperature of the motor in Celsius.
 
         Raises:
-            zmq.ZMQError: If no message is received within the timeout period.
+            RuntimeError: If no message is received within the timeout period.
         """
 
         # Receive the message
         if self.poller.poll(self.timeout):
             # Receive the message
             msg = self.subscriber.recv()
-            
+
             # Parse the message
             claw = claw_msg_pb2.Claw()
             claw.ParseFromString(msg)
@@ -177,7 +209,10 @@ class ClawSubscriber:
         )
 
     def close(self):
-        """Close ZMQ socket and context to prevent memory leaks."""
+        """
+        Close ZMQ socket and context.
+        """
+        
         if hasattr(self, "subscriber") and self.subscriber:
             self.subscriber.close()
         if hasattr(self, "context") and self.context:

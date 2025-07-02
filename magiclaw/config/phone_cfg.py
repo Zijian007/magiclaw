@@ -47,6 +47,7 @@ class PhoneConfig:
             depth_height (int): The height of the depth camera.
             init_pose (list): The initial pose of the phone in the format [x, y, z, qx, qy, qz, qw].
         """
+        
         self.phone_id = phone_id
         self.host = host
         self.port = port
@@ -74,7 +75,21 @@ class PhoneConfig:
                     for sub_key, sub_value in value.items():
                         if hasattr(self, f"{key}_{sub_key}"):
                             setattr(self, f"{key}_{sub_key}", sub_value)
+        
+    def set(self, name: str, value) -> None:
+        """
+        Set an attribute of the motor configuration.
 
+        Args:
+            attr_name (str): The name of the attribute to set.
+            value: The value to set for the attribute.
+        """
+        
+        if hasattr(self, name):
+            setattr(self, name, value)
+        else:
+            raise AttributeError(f"MotorConfig has no attribute '{name}'")
+        
     def set_host(self, host: str) -> None:
         """
         Set the host address for the phone.
@@ -82,4 +97,5 @@ class PhoneConfig:
         Args:
             host (str): The host address.
         """
-        self.host = host
+        
+        self.set("host", host)

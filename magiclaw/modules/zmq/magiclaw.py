@@ -10,10 +10,25 @@ from magiclaw.modules.protobuf import magiclaw_msg_pb2
 
 
 class MagiClawPublisher:
+    """
+    MagiClawPublisher class.
+
+    This class is used to publish MagiClaw messages using ZeroMQ.
+
+    Attributes:
+        context (zmq.Context): The ZeroMQ context.
+        publisher (zmq.Socket): The ZeroMQ publisher socket.
+    """
+
     def __init__(
-        self, host: str, port: int, hwm: int = 1, conflate: bool = True
+        self,
+        host: str,
+        port: int,
+        hwm: int = 1,
+        conflate: bool = True,
     ) -> None:
-        """Publisher initialization.
+        """
+        Publisher initialization.
 
         Args:
             host (str): The host address of the publisher.
@@ -41,9 +56,7 @@ class MagiClawPublisher:
             pathlib.Path(__file__).parent / "protobuf/magiclaw_msg.proto",
         ) as f:
             lines = f.read()
-        messages = re.search(
-            r"message\s+MagiClaw\s*{{(.*?)}}", lines, re.DOTALL
-        )
+        messages = re.search(r"message\s+MagiClaw\s*{{(.*?)}}", lines, re.DOTALL)
         body = messages.group(1)
         print("message MagiClaw")
         print("{\n" + body + "\n}")
@@ -74,13 +87,30 @@ class MagiClawPublisher:
         phone_global_pose: list = np.zeros(6, dtype=np.float32).tolist(),
         magiclaw_pose: list = np.zeros(6, dtype=np.float32).tolist(),
     ) -> None:
-        """Publish the message.
+        """
+        Publish the message.
 
         Args:
-            img: The image captured by the camera.
-            pose: The pose of the marker.
-            force: The force on the bottom surface of the finger.
-            node: The node displacement of the finger.
+            claw_angle (float): The angle of the claw. Default is 0.0.
+            motor_angle (float): The angle of the motor. Default is 0.0.
+            motor_speed (float): The speed of the motor. Default is 0.0.
+            motor_iq (float): The current of the motor in IQ format. Default is 0.0.
+            motor_temperature (int): The temperature of the motor in Celsius. Default is 0.
+            finger_0_img_bytes (bytes): The image captured by finger 0. Default is empty bytes.
+            finger_0_pose (list): The pose of finger 0. Default is a zero vector.
+            finger_0_force (list): The force on the bottom surface of finger 0. Default is a zero vector.
+            finger_0_node (list): The node displacement of finger 0. Default is a zero vector.
+            finger_1_img_bytes (bytes): The image captured by finger 1. Default is empty bytes.
+            finger_1_pose (list): The pose of finger 1. Default is a zero vector.
+            finger_1_force (list): The force on the bottom surface of finger 1. Default is a zero vector.
+            finger_1_node (list): The node displacement of finger 1. Default is a zero vector.
+            phone_color_img_bytes (bytes): The color image captured by the phone. Default is empty bytes.
+            phone_depth_img_bytes (bytes): The depth image captured by the phone. Default is empty bytes.
+            phone_depth_width (int): The width of the phone depth image. Default is 0.
+            phone_depth_height (int): The height of the phone depth image. Default is 0.
+            phone_local_pose (list): The local pose of the phone. Default is a zero vector.
+            phone_global_pose (list): The global pose of the phone. Default is a zero vector.
+            magiclaw_pose (list): The pose of MagiClaw. Default is a zero vector.
         """
 
         # Set the message
@@ -111,7 +141,10 @@ class MagiClawPublisher:
         self.publisher.send(magiclaw.SerializeToString())
 
     def close(self):
-        """Close ZMQ socket and context to prevent memory leaks."""
+        """
+        Close ZMQ socket and context to prevent memory leaks.
+        """
+
         if hasattr(self, "publisher") and self.publisher:
             self.publisher.close()
         if hasattr(self, "context") and self.context:
@@ -119,10 +152,25 @@ class MagiClawPublisher:
 
 
 class MagiClawSubscriber:
+    """
+    MagiClawSubscriber class.
+    
+    This class subscribes to messages from a publisher and parses the received messages.
+    
+    Attributes:
+        context (zmq.Context): The ZMQ context for the subscriber.
+        subscriber (zmq.Socket): The ZMQ subscriber socket.
+    """
+    
     def __init__(
-        self, host: str, port: int, hwm: int = 1, conflate: bool = True
+        self,
+        host: str,
+        port: int,
+        hwm: int = 1,
+        conflate: bool = True,
     ) -> None:
-        """Subscriber initialization.
+        """
+        Subscriber initialization.
 
         Args:
             host (str): The host address of the subscriber.
@@ -146,15 +194,13 @@ class MagiClawSubscriber:
         self.subscriber.connect(f"tcp://{host}:{port}")
         # Subscribe all messages
         self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
-        
+
         # Read the protobuf definition for MagiClaw message
         with open(
             pathlib.Path(__file__).parent / "protobuf/magiclaw_msg.proto",
         ) as f:
             lines = f.read()
-        messages = re.search(
-            r"message\s+MagiClaw\s*{{(.*?)}}", lines, re.DOTALL
-        )
+        messages = re.search(r"message\s+MagiClaw\s*{{(.*?)}}", lines, re.DOTALL)
         body = messages.group(1)
         print("message MagiClaw")
         print("{\n" + body + "\n}")
@@ -184,15 +230,33 @@ class MagiClawSubscriber:
         np.ndarray,
         np.ndarray,
     ]:
-        """Subscribe the message.
+        """
+        Subscribe the message.
 
         Returns:
-            The message.
+            claw_angle (float): The angle of the claw.
+            motor_angle (float): The angle of the motor.
+            motor_speed (float): The speed of the motor.
+            motor_iq (float): The current of the motor in IQ format.
+            motor_temperature (int): The temperature of the motor in Celsius.
+            finger_0_img (bytes): The image captured by finger 0.
+            finger_0_pose (np.ndarray): The pose of finger 0.
+            finger_0_force (np.ndarray): The force on the bottom surface of finger 0.
+            finger_0_node (np.ndarray): The node displacement of finger 0.
+            finger_1_img (bytes): The image captured by finger 1.
+            finger_1_pose (np.ndarray): The pose of finger 1.
+            finger_1_force (np.ndarray): The force on the bottom surface of finger 1.
+            finger_1_node (np.ndarray): The node displacement of finger 1.
+            phone_color_img (bytes): The color image captured by the phone.
+            phone_depth_img (bytes): The depth image captured by the phone.
+            phone_local_pose (np.ndarray): The local pose of the phone.
+            phone_global_pose (np.ndarray): The global pose of the phone.
+            magiclaw_pose (np.ndarray): The pose of MagiClaw.
         """
 
         # Receive the message
         msg = self.subscriber.recv()
-        
+
         # Parse the message
         magiclaw = magiclaw_msg_pb2.MagiClaw()
         magiclaw.ParseFromString(msg)
@@ -239,7 +303,10 @@ class MagiClawSubscriber:
         )
 
     def close(self):
-        """Close ZMQ socket and context to prevent memory leaks."""
+        """
+        Close ZMQ socket and context to prevent memory leaks.
+        """
+
         if hasattr(self, "subscriber") and self.subscriber:
             self.subscriber.close()
         if hasattr(self, "context") and self.context:

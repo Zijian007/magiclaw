@@ -76,6 +76,15 @@ class ZMQConfig:
                 if hasattr(self, key):
                     setattr(self, key, value)
 
+    def set_host(self, host: str) -> None:
+        """
+        Set the host address for the phone.
+
+        Args:
+            host (str): The host address.
+        """
+        self.host = host
+    
     def set_bilateral_host(self, host: str) -> None:
         """
         Set the bilateral host.
@@ -83,4 +92,5 @@ class ZMQConfig:
         Args:
             host (str): The host address of the bilateral connection.
         """
-        self.bilateral_host = host
+        
+        self.set("bilateral_host", host)

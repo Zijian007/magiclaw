@@ -7,8 +7,6 @@ FingerNet configuration
 This module contains the configuration for the FingerNet model.
 """
 
-from typing import Optional
-
 
 class FingerNetConfig:
     """
@@ -22,8 +20,8 @@ class FingerNetConfig:
 
     def __init__(
         self,
+        model_path: str,
         name: str = "FingerNet",
-        model_path: str = None,
         device: str = "auto",
     ) -> None:
         """
@@ -41,3 +39,17 @@ class FingerNetConfig:
         self.name = name
         self.model_path = model_path
         self.device = device
+        
+    def set(self, name: str, value) -> None:
+        """
+        Set an attribute of the motor configuration.
+
+        Args:
+            attr_name (str): The name of the attribute to set.
+            value: The value to set for the attribute.
+        """
+        
+        if hasattr(self, name):
+            setattr(self, name, value)
+        else:
+            raise AttributeError(f"MotorConfig has no attribute '{name}'")

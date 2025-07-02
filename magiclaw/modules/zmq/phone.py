@@ -10,10 +10,25 @@ from magiclaw.modules.protobuf import phone_msg_pb2
 
 
 class PhonePublisher:
+    """
+    PhonePublisher class.
+
+    This class is used to publish phone messages using ZeroMQ.
+
+    Attributes:
+        context (zmq.Context): The ZeroMQ context.
+        publisher (zmq.Socket): The ZeroMQ publisher socket.
+    """
+
     def __init__(
-        self, host: str, port: str, hwm: int = 1, conflate: bool = True
+        self,
+        host: str,
+        port: str,
+        hwm: int = 1,
+        conflate: bool = True,
     ) -> None:
-        """Publisher initialization.
+        """
+        Publisher initialization.
 
         Args:
             host (str): The host address of the publisher.
@@ -41,9 +56,7 @@ class PhonePublisher:
             pathlib.Path(__file__).parent / "protobuf/phone_msg.proto",
         ) as f:
             lines = f.read()
-        messages = re.search(
-            r"message\s+Phone\s*{{(.*?)}}", lines, re.DOTALL
-        )
+        messages = re.search(r"message\s+Phone\s*{{(.*?)}}", lines, re.DOTALL)
         body = messages.group(1)
         print("Message Phone")
         print("{\n" + body + "\n}")
@@ -60,7 +73,8 @@ class PhonePublisher:
         local_pose: list = np.zeros(6, dtype=np.float32).tolist(),
         global_pose: list = np.zeros(6, dtype=np.float32).tolist(),
     ) -> None:
-        """Publish the message.
+        """
+        Publish the message.
 
         Args:
             color_img_bytes: The image captured by the camera.
@@ -82,7 +96,10 @@ class PhonePublisher:
         self.publisher.send(phone.SerializeToString())
 
     def close(self):
-        """Close ZMQ socket and context to prevent memory leaks."""
+        """
+        Close ZMQ socket and context.
+        """
+
         if hasattr(self, "publisher") and self.publisher:
             self.publisher.close()
         if hasattr(self, "context") and self.context:
@@ -90,6 +107,16 @@ class PhonePublisher:
 
 
 class PhoneSubscriber:
+    """
+    PhoneSubscriber class.
+    
+    This class subscribes to messages from a publisher and parses the received messages.
+    
+    Attributes:
+        context (zmq.Context): The ZeroMQ context for the subscriber.
+        subscriber (zmq.Socket): The ZeroMQ subscriber socket.
+    """
+    
     def __init__(
         self,
         host: str,
@@ -98,7 +125,8 @@ class PhoneSubscriber:
         conflate: bool = True,
         timeout: int = 100,
     ) -> None:
-        """Subscriber initialization.
+        """
+        Subscriber initialization.
 
         Args:
             host (str): The host address of the subscriber.
@@ -133,9 +161,7 @@ class PhoneSubscriber:
             pathlib.Path(__file__).parent / "protobuf/phone_msg.proto",
         ) as f:
             lines = f.read()
-        messages = re.search(
-            r"message\s+Phone\s*{{(.*?)}}", lines, re.DOTALL
-        )
+        messages = re.search(r"message\s+Phone\s*{{(.*?)}}", lines, re.DOTALL)
         body = messages.group(1)
         print("Message Phone")
         print("{\n" + body + "\n}")
@@ -144,18 +170,16 @@ class PhoneSubscriber:
         print("{:-^80}".format(""))
 
     def subscribeMessage(self) -> Tuple[bytes, bytes, int, int, list, list]:
-        """Subscribe the message.
-
-        Args:
-            timeout: Maximum time to wait for a message in milliseconds. Default is 100ms.
+        """
+        Subscribe the message.
 
         Returns:
-            color_img: The image captured by the camera.
-            depth_img: The depth image captured by the camera.
-            depth_width: The width of the depth image.
-            depth_height: The height of the depth image.
-            local_pose: The local pose of the phone.
-            global_pose: The global pose of the phone.
+            color_img (bytes): The color image captured by the phone.
+            depth_img (bytes): The depth image captured by the phone.
+            depth_width (int): The width of the depth image.
+            depth_height (int): The height of the depth image.
+            local_pose (list): The local pose of the phone.
+            global_pose (list): The global pose of the phone.
 
         Raises:
             zmq.ZMQError: If no message is received within the timeout period.
@@ -166,7 +190,7 @@ class PhoneSubscriber:
         if self.poller.poll(self.timeout):
             # Receive the message
             msg = self.subscriber.recv()
-            
+
             # Parse the message
             phone = phone_msg_pb2.Phone()
             phone.ParseFromString(msg)
@@ -182,7 +206,10 @@ class PhoneSubscriber:
         )
 
     def close(self):
-        """Close ZMQ socket and context to prevent memory leaks."""
+        """
+        Close ZMQ socket and context.
+        """
+
         if hasattr(self, "subscriber") and self.subscriber:
             self.subscriber.close()
         if hasattr(self, "context") and self.context:
