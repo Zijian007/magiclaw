@@ -6,7 +6,7 @@ set -x
 
 ### Step 1: Update packages
 echo "=========================================="
-echo "Step 1: Update packages"
+echo "📦 Step 1: Update packages"
 echo "=========================================="
 
 # (Optional) Switch apt source to Tsinghua mirror (important for China users)
@@ -45,7 +45,7 @@ sudo apt update && sudo apt upgrade -y
 
 ### Step 2: Install Miniconda
 echo "=========================================="
-echo "Step 2: Install Miniconda"
+echo "🐍 Step 2: Install Miniconda"
 echo "=========================================="
 mkdir -p ~/miniconda3
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O ~/miniconda3/miniconda.sh
@@ -80,8 +80,9 @@ pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/si
 
 ### Step 3: Set hostname
 echo "=========================================="
-echo "Step 3: Set hostname"
+echo "🖥️ Step 3: Set hostname"
 echo "=========================================="
+
 # Get the last 6 characters of the MAC address of eth0
 echo "Setting hostname based on MAC address of eth0..."
 MAC_SUFFIX=$(ip link show eth0 | grep ether | awk '{print $2}' | tail -c 6 | tr -d ':')
@@ -93,8 +94,11 @@ sudo hostnamectl set-hostname "$NEW_HOSTNAME"
 
 ### Step 4: Configure Wi-Fi Access Point
 echo "=========================================="
-echo "Step 4: Configure Wi-Fi Access Point"
+echo "📶 Step 4: Configure Wi-Fi Access Point"
 echo "=========================================="
+
+# Install necessary packages for Wi-Fi Access Point
+echo "Installing hostapd, dhcpcd5, dnsmasq, and network-manager..."
 sudo apt install -y hostapd dhcpcd5 dnsmasq network-manager
 
 SSID="$NEW_HOSTNAME"
@@ -182,7 +186,7 @@ sudo apt install -y raspberrypi-ui-mods
 
 ### Step 5: Configure CAN bus
 echo "=========================================="
-echo "Step 5: Configure CAN bus"
+echo "🛠️ Step 5: Configure CAN bus"
 echo "=========================================="
 # Install necessary packages for CAN bus
 echo "Installing CAN bus packages..."
@@ -253,7 +257,7 @@ sudo systemctl enable can-setup.service
 
 ### Step 6: Configure cooling fan
 echo "=========================================="
-echo "Step 6: Configure cooling fan"
+echo "❄️ Step 6: Configure cooling fan"
 echo "=========================================="
 echo "Configuring cooling fan settings..."
 # Ensure the cooling fan is enabled and configured
@@ -280,6 +284,6 @@ EOF
 
 ### Final message
 echo "=========================================="
-echo "Setup completed successfully."
-echo "Reboot the system to apply all changes."
+echo "✅ Setup completed successfully."
+echo "🔁 Reboot the system to apply all changes."
 echo "=========================================="

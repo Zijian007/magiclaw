@@ -1,27 +1,38 @@
 #!/bin/bash
+# -*- coding: utf-8 -*-
+
+set -e
+
+echo "=========================================="
+echo "🤖 Get Pretrained Models"
+echo "=========================================="
+
+# Get the current script directory
+script_dir=$(dirname "$(realpath "$0")")
 
 # Define the target folder path
-models_dir="models"
+models_dir="$script_dir/models"
 
 # Check if the target folder exists, if not, create it
 if [ ! -d "$models_dir" ]; then
-  mkdir "$models_dir"
-  echo "Created folder: $models_dir"
-else
-  echo "Folder $models_dir already exists"
+  mkdir -p "$models_dir"
 fi
+mkdir -p "$models_dir"
+echo "Folder ready: $models_dir"
 
 # Download the model file
 onnx_url="Model file URL"
-model_name="FingerNet.onnx"
+model_name=$(basename "$onnx_url")
+model_path="$models_dir/$model_name"
 
-echo "Starting to download the model..."
+echo "Downloading model to: $model_path"
 
 # Use curl to download the model and show the progress bar
-curl -L "$onnx_url" -o "$models_dir/$model_name" -#
+curl -L "$onnx_url" -o "$model_path" -#
 
 if [ $? -eq 0 ]; then
-  echo "Model downloaded successfully: $models_dir/$model_name"
+  echo "✅ Model downloaded successfully: $model_path"
 else
-  echo "Model download failed. Please check the Internet connection."
+  echo "❌ Download failed. Please check the Internet connection."
+  echo "🔄 Please try again later or check the URL."
 fi
