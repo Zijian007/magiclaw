@@ -29,6 +29,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
+    "gdown==5.2.0",
     "numpy==2.2.4",
     "onnxruntime==1.21.0",
     "opencv-contrib-python==4.11.0.86",
