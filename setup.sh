@@ -4,9 +4,9 @@
 set -e
 set -x
 
-### Step 1: Update packages
+### Update packages
 echo "=========================================="
-echo "📦 Step 1: Update packages"
+echo "Update packages"
 echo "=========================================="
 
 # Update package lists and upgrade installed packages
@@ -14,9 +14,9 @@ echo "Updating package lists and upgrading installed packages..."
 sudo systemctl stop packagekit
 sudo apt update && sudo apt upgrade -y
 
-### Step 2: Install Miniconda
+### Install Miniconda
 echo "=========================================="
-echo "🐍 Step 2: Install Miniconda"
+echo "Install Miniconda"
 echo "=========================================="
 mkdir -p ~/miniconda3
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O ~/miniconda3/miniconda.sh
@@ -26,9 +26,9 @@ eval "$(/home/pi/miniconda3/bin/conda shell.bash hook)"
 conda init --all
 
 
-### Step 3: Set hostname
+### Set hostname
 echo "=========================================="
-echo "🖥️ Step 3: Set hostname"
+echo "Set hostname"
 echo "=========================================="
 
 # Get the last 6 characters of the MAC address of eth0
@@ -41,9 +41,9 @@ sudo sed -i "s/127.0.1.1.*/127.0.1.1\t$NEW_HOSTNAME/" /etc/hosts
 sudo hostnamectl set-hostname "$NEW_HOSTNAME"
 
 
-### Step 4: Configure Wi-Fi Access Point
+### Configure Wi-Fi Access Point
 echo "=========================================="
-echo "📶 Step 4: Configure Wi-Fi Access Point"
+echo "Configure Wi-Fi Access Point"
 echo "=========================================="
 
 # Install necessary packages for Wi-Fi Access Point
@@ -134,9 +134,9 @@ echo "Installing Raspberry Pi UI mods..."
 sudo apt install -y raspberrypi-ui-mods
 
 
-### Step 5: Configure CAN bus
+### Configure CAN bus
 echo "=========================================="
-echo "🛠️ Step 5: Configure CAN bus"
+echo "Configure CAN bus"
 echo "=========================================="
 # Install necessary packages for CAN bus
 echo "Installing CAN bus packages..."
@@ -236,6 +236,6 @@ EOF
 
 ### Final message
 echo "=========================================="
-echo "✅ Setup completed successfully."
-echo "🔁 Reboot the system to apply all changes."
+echo "Setup completed successfully."
+echo "Reboot the system to apply all changes."
 echo "=========================================="

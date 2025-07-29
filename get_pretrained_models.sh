@@ -4,7 +4,7 @@
 set -e
 
 echo "=========================================="
-echo "🤖 Get Pretrained Models"
+echo "Get Pretrained Models"
 echo "=========================================="
 
 # Get the current script directory
@@ -32,9 +32,9 @@ curl -L "$onnx_url" -o "$model_path" -#
 
 echo "==========================================="
 if [ $? -eq 0 ]; then
-  echo "✅ Model downloaded successfully: $model_path"
+  echo "Model downloaded successfully: $model_path"
 else
-  echo "❌ Download failed. Please check the Internet connection."
-  echo "🔄 Please try again later or check the URL."
+  echo "Download failed. Please check the Internet connection."
+  echo "Please try again later or check the URL."
 fi
 echo "==========================================="

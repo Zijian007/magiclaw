@@ -3,18 +3,18 @@ name = "magiclaw"
 version = "0.2.0"
 description = "MagiClaw: Universal Action Embodiment"
 authors = [
-    {name = "Xudong Han", email = "12231112@mail.sustech.edu.cn"},
-    {name = "Tianyu Wu", email = "12431162@mail.sustech.edu.cn"},
-    {name = "Sheng Ge", email = "12132253@mail.sustech.edu.cn"},
-    {name = "Yang Xiao", email = "11811019@mail.sustech.edu.cn"},
-    {name = "Yujian Dong", email = "12232321@mail.sustech.edu.cn"},
-    {name = "Ronghan Xu", email = "12232320@mail.sustech.edu.cn"},
-    {name = "Junlin Wang", email = "12112921@mail.sustech.edu.cn"},
-    {name = "Fang Wan", email = "wanf@sustech.edu.cn"},
-    {name = "Chaoyang Song", email = "songcy@ieee.org"},
+    { name = "Xudong Han", email = "12231112@mail.sustech.edu.cn" },
+    { name = "Tianyu Wu", email = "12431162@mail.sustech.edu.cn" },
+    { name = "Sheng Ge", email = "12132253@mail.sustech.edu.cn" },
+    { name = "Yang Xiao", email = "11811019@mail.sustech.edu.cn" },
+    { name = "Yujian Dong", email = "12232321@mail.sustech.edu.cn" },
+    { name = "Ronghan Xu", email = "12232320@mail.sustech.edu.cn" },
+    { name = "Junlin Wang", email = "12112921@mail.sustech.edu.cn" },
+    { name = "Fang Wan", email = "wanf@sustech.edu.cn" },
+    { name = "Chaoyang Song", email = "songcy@ieee.org" },
 ]
 readme = "README.md"
-license = {text = "MIT"}
+license = { text = "MIT" }
 requires-python = ">=3.10"
 keywords = ["robotics", "deep learning", "manipulation"]
 classifiers = [
