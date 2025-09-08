@@ -51,14 +51,14 @@ class ClawPublisher:
         self.publisher.bind(f"tcp://{host}:{port}")
 
         # Read the protobuf definition for Claw message
-        with open(
-            pathlib.Path(__file__).parent.parent / "protobuf/claw_msg.proto",
-        ) as f:
-            lines = f.read()
-        messages = re.search(r"message\s+Claw\s*{{(.*?)}}", lines, re.DOTALL)
-        body = messages.group(1)
-        print("Message Claw")
-        print("{\n" + body + "\n}")
+        # with open(
+        #     pathlib.Path(__file__).parent.parent / "protobuf/claw_msg.proto",
+        # ) as f:
+        #     lines = f.read()
+        # messages = re.search(r"message\s+Claw\s*{{(.*?)}}", lines, re.DOTALL)
+        # body = messages.group(1)
+        # print("Message Claw")
+        # print("{\n" + body + "\n}")
 
         print("Claw Publisher Initialization Done.")
         print("{:-^80}".format(""))
@@ -161,14 +161,14 @@ class ClawSubscriber:
         self.timeout = timeout
 
         # Read the protobuf definition for Claw message
-        with open(
-            pathlib.Path(__file__).parent.parent / "protobuf/claw_msg.proto",
-        ) as f:
-            lines = f.read()
-        messages = re.search(r"message\s+Claw\s*{{(.*?)}}", lines, re.DOTALL)
-        body = messages.group(1)
-        print("Message Claw")
-        print("{\n" + body + "\n}")
+        # with open(
+        #     pathlib.Path(__file__).parent.parent / "protobuf/claw_msg.proto",
+        # ) as f:
+        #     lines = f.read()
+        # messages = re.search(r"message\s+Claw\s*{{(.*?)}}", lines, re.DOTALL)
+        # body = messages.group(1)
+        # print("Message Claw")
+        # print("{\n" + body + "\n}")
 
         print("Claw Subscriber Initialization Done.")
         print("{:-^80}".format(""))

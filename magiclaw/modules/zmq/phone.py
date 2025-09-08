@@ -52,14 +52,14 @@ class PhonePublisher:
         self.publisher.bind(f"tcp://{host}:{port}")
 
         # Read the protobuf definition for Phone message
-        with open(
-            pathlib.Path(__file__).parent.parent / "protobuf/phone_msg.proto",
-        ) as f:
-            lines = f.read()
-        messages = re.search(r"message\s+Phone\s*{{(.*?)}}", lines, re.DOTALL)
-        body = messages.group(1)
-        print("Message Phone")
-        print("{\n" + body + "\n}")
+        # with open(
+        #     pathlib.Path(__file__).parent.parent / "protobuf/phone_msg.proto",
+        # ) as f:
+        #     lines = f.read()
+        # messages = re.search(r"message\s+Phone\s*{{(.*?)}}", lines, re.DOTALL)
+        # body = messages.group(1)
+        # print("Message Phone")
+        # print("{\n" + body + "\n}")
 
         print("Phone Publisher Initialization Done.")
         print("{:-^80}".format(""))
@@ -157,14 +157,14 @@ class PhoneSubscriber:
         self.timeout = timeout
 
         # Read the protobuf definition for Phone message
-        with open(
-            pathlib.Path(__file__).parent.parent / "protobuf/phone_msg.proto",
-        ) as f:
-            lines = f.read()
-        messages = re.search(r"message\s+Phone\s*{{(.*?)}}", lines, re.DOTALL)
-        body = messages.group(1)
-        print("Message Phone")
-        print("{\n" + body + "\n}")
+        # with open(
+        #     pathlib.Path(__file__).parent.parent / "protobuf/phone_msg.proto",
+        # ) as f:
+        #     lines = f.read()
+        # messages = re.search(r"message\s+Phone\s*{{(.*?)}}", lines, re.DOTALL)
+        # body = messages.group(1)
+        # print("Message Phone")
+        # print("{\n" + body + "\n}")
 
         print("Phone Subscriber Initialization Done.")
         print("{:-^80}".format(""))

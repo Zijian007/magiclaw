@@ -52,14 +52,14 @@ class MagiClawPublisher:
         self.publisher.bind(f"tcp://{host}:{port}")
 
         # Read the protobuf definition for MagiClaw message
-        with open(
-            pathlib.Path(__file__).parent.parent / "protobuf/magiclaw_msg.proto",
-        ) as f:
-            lines = f.read()
-        messages = re.search(r"message\s+MagiClaw\s*{{(.*?)}}", lines, re.DOTALL)
-        body = messages.group(1)
-        print("message MagiClaw")
-        print("{\n" + body + "\n}")
+        # with open(
+        #     pathlib.Path(__file__).parent.parent / "protobuf/magiclaw_msg.proto",
+        # ) as f:
+        #     lines = f.read()
+        # messages = re.search(r"message\s+MagiClaw\s*{{(.*?)}}", lines, re.DOTALL)
+        # body = messages.group(1)
+        # print("message MagiClaw")
+        # print("{\n" + body + "\n}")
 
         print("MagiClaw Publisher Initialization Done.")
         print("{:-^80}".format(""))
@@ -196,14 +196,14 @@ class MagiClawSubscriber:
         self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
 
         # Read the protobuf definition for MagiClaw message
-        with open(
-            pathlib.Path(__file__).parent.parent / "protobuf/magiclaw_msg.proto",
-        ) as f:
-            lines = f.read()
-        messages = re.search(r"message\s+MagiClaw\s*{{(.*?)}}", lines, re.DOTALL)
-        body = messages.group(1)
-        print("message MagiClaw")
-        print("{\n" + body + "\n}")
+        # with open(
+        #     pathlib.Path(__file__).parent.parent / "protobuf/magiclaw_msg.proto",
+        # ) as f:
+        #     lines = f.read()
+        # messages = re.search(r"message\s+MagiClaw\s*{{(.*?)}}", lines, re.DOTALL)
+        # body = messages.group(1)
+        # print("message MagiClaw")
+        # print("{\n" + body + "\n}")
 
         print("Claw Subscriber Initialization Done.")
         print("{:-^80}".format(""))

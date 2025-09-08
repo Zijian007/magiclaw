@@ -52,17 +52,17 @@ class FingerPublisher:
         self.publisher.bind(f"tcp://{host}:{port}")
 
         # Read the protobuf definition for Finger message
-        with open(
-            pathlib.Path(__file__).parent.parent / "protobuf/finger_msg.proto",
-        ) as f:
-            lines = f.read()
-        messages = re.search(r"message\s+Finger\s*{{(.*?)}}", lines, re.DOTALL)
-        body = messages.group(1)
-        print("Message Finger")
-        print("{\n" + body + "\n}")
+        # with open(
+        #     pathlib.Path(__file__).parent.parent / "protobuf/finger_msg.proto",
+        # ) as f:
+        #     lines = f.read()
+        # messages = re.search(r"message\s+Finger\s*{{(.*?)}}", lines, re.DOTALL)
+        # body = messages.group(1)
+        # print("Message Finger")
+        # print("{\n" + body + "\n}")
 
-        print("Finger Publisher Initialization Done.")
-        print("{:-^80}".format(""))
+        # print("Finger Publisher Initialization Done.")
+        # print("{:-^80}".format(""))
 
     def publishMessage(
         self,
@@ -156,14 +156,14 @@ class FingerSubscriber:
         self.timeout = timeout
 
         # Read the protobuf definition for Finger message
-        with open(
-            pathlib.Path(__file__).parent.parent / "protobuf/finger_msg.proto",
-        ) as f:
-            lines = f.read()
-        messages = re.search(r"message\s+Finger\s*{{(.*?)}}", lines, re.DOTALL)
-        body = messages.group(1)
-        print("Message Finger")
-        print("{\n" + body + "\n}")
+        # with open(
+        #     pathlib.Path(__file__).parent.parent / "protobuf/finger_msg.proto",
+        # ) as f:
+        #     lines = f.read()
+        # messages = re.search(r"message\s+Finger\s*{{(.*?)}}", lines, re.DOTALL)
+        # body = messages.group(1)
+        # print("Message Finger")
+        # print("{\n" + body + "\n}")
 
         print("Finger Subscriber Initialization Done.")
         print("{:-^80}".format(""))

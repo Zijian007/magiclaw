@@ -59,14 +59,14 @@ class CameraSubscriber:
         self.timeout = timeout
 
         # Read the protobuf definition for Camera message
-        with open(
-            pathlib.Path(__file__).parent.parent / "protobuf/camera_msg.proto",
-        ) as f:
-            lines = f.read()
-        messages = re.search(r"message\s+Camera\s*{{(.*?)}}", lines, re.DOTALL)
-        body = messages.group(1)
-        print("message Camera")
-        print("{\n" + body + "\n}")
+        # with open(
+        #     pathlib.Path(__file__).parent.parent / "protobuf/cam_msg.proto",
+        # ) as f:
+        #     lines = f.read()
+        # messages = re.search(r"message\s+Camera\s*{{(.*?)}}", lines, re.DOTALL)
+        # body = messages.group(1)
+        # print("message Camera")
+        # print("{\n" + body + "\n}")
 
         print("Camera Subscriber Initialization Done.")
 
