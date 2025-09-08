@@ -53,7 +53,7 @@ class PhonePublisher:
 
         # Read the protobuf definition for Phone message
         with open(
-            pathlib.Path(__file__).parent / "protobuf/phone_msg.proto",
+            pathlib.Path(__file__).parent.parent / "protobuf/phone_msg.proto",
         ) as f:
             lines = f.read()
         messages = re.search(r"message\s+Phone\s*{{(.*?)}}", lines, re.DOTALL)
@@ -158,7 +158,7 @@ class PhoneSubscriber:
 
         # Read the protobuf definition for Phone message
         with open(
-            pathlib.Path(__file__).parent / "protobuf/phone_msg.proto",
+            pathlib.Path(__file__).parent.parent / "protobuf/phone_msg.proto",
         ) as f:
             lines = f.read()
         messages = re.search(r"message\s+Phone\s*{{(.*?)}}", lines, re.DOTALL)

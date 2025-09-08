@@ -53,7 +53,7 @@ class MagiClawPublisher:
 
         # Read the protobuf definition for MagiClaw message
         with open(
-            pathlib.Path(__file__).parent / "protobuf/magiclaw_msg.proto",
+            pathlib.Path(__file__).parent.parent / "protobuf/magiclaw_msg.proto",
         ) as f:
             lines = f.read()
         messages = re.search(r"message\s+MagiClaw\s*{{(.*?)}}", lines, re.DOTALL)
@@ -197,7 +197,7 @@ class MagiClawSubscriber:
 
         # Read the protobuf definition for MagiClaw message
         with open(
-            pathlib.Path(__file__).parent / "protobuf/magiclaw_msg.proto",
+            pathlib.Path(__file__).parent.parent / "protobuf/magiclaw_msg.proto",
         ) as f:
             lines = f.read()
         messages = re.search(r"message\s+MagiClaw\s*{{(.*?)}}", lines, re.DOTALL)

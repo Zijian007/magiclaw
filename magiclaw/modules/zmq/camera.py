@@ -60,7 +60,7 @@ class CameraSubscriber:
 
         # Read the protobuf definition for Camera message
         with open(
-            pathlib.Path(__file__).parent / "protobuf/camera_msg.proto",
+            pathlib.Path(__file__).parent.parent / "protobuf/camera_msg.proto",
         ) as f:
             lines = f.read()
         messages = re.search(r"message\s+Camera\s*{{(.*?)}}", lines, re.DOTALL)

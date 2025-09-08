@@ -53,7 +53,7 @@ class FingerPublisher:
 
         # Read the protobuf definition for Finger message
         with open(
-            pathlib.Path(__file__).parent / "protobuf/finger_msg.proto",
+            pathlib.Path(__file__).parent.parent / "protobuf/finger_msg.proto",
         ) as f:
             lines = f.read()
         messages = re.search(r"message\s+Finger\s*{{(.*?)}}", lines, re.DOTALL)
@@ -157,7 +157,7 @@ class FingerSubscriber:
 
         # Read the protobuf definition for Finger message
         with open(
-            pathlib.Path(__file__).parent / "protobuf/finger_msg.proto",
+            pathlib.Path(__file__).parent.parent / "protobuf/finger_msg.proto",
         ) as f:
             lines = f.read()
         messages = re.search(r"message\s+Finger\s*{{(.*?)}}", lines, re.DOTALL)

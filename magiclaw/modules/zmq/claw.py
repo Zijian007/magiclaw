@@ -52,7 +52,7 @@ class ClawPublisher:
 
         # Read the protobuf definition for Claw message
         with open(
-            pathlib.Path(__file__).parent / "protobuf/claw_msg.proto",
+            pathlib.Path(__file__).parent.parent / "protobuf/claw_msg.proto",
         ) as f:
             lines = f.read()
         messages = re.search(r"message\s+Claw\s*{{(.*?)}}", lines, re.DOTALL)
@@ -162,7 +162,7 @@ class ClawSubscriber:
 
         # Read the protobuf definition for Claw message
         with open(
-            pathlib.Path(__file__).parent / "protobuf/claw_msg.proto",
+            pathlib.Path(__file__).parent.parent / "protobuf/claw_msg.proto",
         ) as f:
             lines = f.read()
         messages = re.search(r"message\s+Claw\s*{{(.*?)}}", lines, re.DOTALL)
