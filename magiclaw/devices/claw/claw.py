@@ -235,21 +235,23 @@ class Claw:
         try:
             # Read the motor angle
             motor_angle = self.motor.read_multi_turn_angle()
-            self.motor_angle = motor_angle / 100.0 - self.motor_angle_offset
-            self.claw_angle = self._motor_angle_to_claw_angle(self.motor_angle)
-            self.motor_angle_percent = self.motor_angle / self.motor_angle_range
+            
+            # Check if the motor angle is valid
+            if motor_angle / 100.0 - self.motor_angle_offset > -10.0 and motor_angle / 100.0 - self.motor_angle_offset < 360.0:
+                self.motor_angle = motor_angle / 100.0 - self.motor_angle_offset
+                self.claw_angle = self._motor_angle_to_claw_angle(self.motor_angle)
+                self.motor_angle_percent = self.motor_angle / self.motor_angle_range
+            else:
+                raise ValueError(
+                    f"Invalid motor angle: {motor_angle / 100.0 - self.motor_angle_offset} deg. Please check the connection."
+                )
 
             # Read the motor temperature, iq, speed
-            try:
-                motor_status = self.motor.read_motor_status_2()
-                if motor_status is not None:
-                    motor_temperature, motor_iq, motor_speed, _ = motor_status
-                else:
-                    raise ValueError("Motor status is None.")
-            except Exception as e:
-                raise ValueError(
-                    f"Failed to read the motor status: {e}. Please check the connection."
-                )
+            motor_status = self.motor.read_motor_status_2()
+            if motor_status is not None:
+                motor_temperature, motor_iq, motor_speed, _ = motor_status
+            else:
+                raise ValueError("Motor status is None.")
             self.motor_temperature = motor_temperature
             self.motor_speed = motor_speed
             self.motor_iq = motor_iq / 2048 * 16.5

@@ -464,9 +464,12 @@ def publish_process(
 
             # Get finger 0 data
             try:
-                finger_0_img_bytes, finger_0_pose, finger_0_force, finger_0_node = (
-                    finger_0_subscriber.subscribeMessage()
-                )
+                (
+                    finger_0_img_bytes, 
+                    finger_0_pose, 
+                    finger_0_force, 
+                    finger_0_node, 
+                ) = finger_0_subscriber.subscribeMessage()
             except Exception as e:
                 if msg_count % (loop_rate * 2) == 0:
                     logger.warning(f"Finger 0 subscriber: {str(e)}")
@@ -475,9 +478,9 @@ def publish_process(
             try:
                 (
                     finger_1_img_bytes,
-                    finger_1_pose[:],
-                    finger_1_force[:],
-                    finger_1_node[:],
+                    finger_1_pose,
+                    finger_1_force,
+                    finger_1_node,
                 ) = finger_1_subscriber.subscribeMessage()
             except Exception as e:
                 if msg_count % (loop_rate * 2) == 0:
@@ -490,8 +493,8 @@ def publish_process(
                     phone_depth_img_bytes,
                     phone_depth_width,
                     phone_depth_height,
-                    phone_local_pose[:],
-                    phone_global_pose[:],
+                    phone_local_pose,
+                    phone_global_pose,
                 ) = phone_subscriber.subscribeMessage()
 
                 # Change phone pose from y-up to z-up

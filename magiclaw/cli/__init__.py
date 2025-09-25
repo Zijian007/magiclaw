@@ -1,5 +1,5 @@
 """
-MagiClaw CLI.
+MagiClaw CLI
 =========
 
 MagiClaw CLI is a command line interface for running the MagiClaw system.

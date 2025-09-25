@@ -82,9 +82,9 @@ class MagiClaw:
 
         # Check if the claw ID is valid
         if id < 0 or id > 1:
-            raise ValueError("\033[31mInvalid ID! Must be >= 0.\033[0m")
+            raise ValueError("Invalid ID! Must be >= 0.")
         if id is None:
-            raise ValueError("\033[31mID must be provided!\033[0m")
+            raise ValueError("ID must be provided!")
         # Set the claw ID
         self.id = id
 
@@ -92,7 +92,7 @@ class MagiClaw:
         self.mode = mode
         if self.mode not in ["teleop", "standalone"]:
             raise ValueError(
-                "\033[31mInvalid mode! Must be 'teleop' or 'standalone'.\033[0m"
+                "Invalid mode! Must be 'teleop' or 'standalone'."
             )
 
         # Set root directory

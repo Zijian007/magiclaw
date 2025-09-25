@@ -4,48 +4,19 @@
 set -e
 set -x
 
-### Step 1: Update packages
+### Update packages
 echo "=========================================="
-echo "Step 1: Update packages"
+echo "Update packages"
 echo "=========================================="
-
-# (Optional) Switch apt source to Tsinghua mirror (important for China users)
-# This step is optional and can be skipped if you prefer to use the default Debian sources.
-if [ ! -f /etc/apt/sources.list.bak ]; then
-  echo "Backing up /etc/apt/sources.list to sources.list.bak"
-  sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
-fi
-echo "Switching apt source to Tsinghua mirror..."
-sudo tee /etc/apt/sources.list > /dev/null <<EOF
-deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
-# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
-
-deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
-# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
-
-deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware
-# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware
-EOF
-
-# (Optional) Switch Raspberry Pi OS source to Tsinghua mirror (important for China users)
-# This step is optional and can be skipped if you prefer to use the default Raspberry Pi sources.
-if [ -f /etc/apt/sources.list.d/raspi.list ]; then
-  echo "Backing up /etc/apt/sources.list.d/raspi.list to raspi.list.bak"
-  sudo cp /etc/apt/sources.list.d/raspi.list /etc/apt/sources.list.d/raspi.list.bak
-fi
-echo "Switching Raspberry Pi OS source to Tsinghua mirror..."
-sudo tee /etc/apt/sources.list.d/raspi.list > /dev/null <<EOF
-deb https://mirrors.tuna.tsinghua.edu.cn/raspberrypi/ bookworm main
-EOF
 
 # Update package lists and upgrade installed packages
 echo "Updating package lists and upgrading installed packages..."
 sudo systemctl stop packagekit
 sudo apt update && sudo apt upgrade -y
 
-### Step 2: Install Miniconda
+### Install Miniconda
 echo "=========================================="
-echo "Step 2: Install Miniconda"
+echo "Install Miniconda"
 echo "=========================================="
 mkdir -p ~/miniconda3
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O ~/miniconda3/miniconda.sh
@@ -54,34 +25,12 @@ rm ~/miniconda3/miniconda.sh
 eval "$(/home/pi/miniconda3/bin/conda shell.bash hook)"
 conda init --all
 
-# (Optional) Switch conda source to Tsinghua mirror (important for China users)
-# This step is optional and can be skipped if you prefer to use the default conda sources.
-if [ ! -f ~/.condarc ]; then
-  echo "Creating ~/.condarc for conda configuration..."
-  cat <<EOF > ~/.condarc
-channels:
-  - defaults
-show_channel_urls: true
-default_channels:
-  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
-  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
-  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2
-custom_channels:
-  conda-forge: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
-  pytorch: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
-EOF
-else
-  echo "Skipping ~/.condarc creation, it already exists."
-fi
 
-# (Optional) Switch pip source to Tsinghua mirror (important for China users)
-# This step is optional and can be skipped if you prefer to use the default pip sources.
-pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
+### Set hostname
+echo "=========================================="
+echo "Set hostname"
+echo "=========================================="
 
-### Step 3: Set hostname
-echo "=========================================="
-echo "Step 3: Set hostname"
-echo "=========================================="
 # Get the last 6 characters of the MAC address of eth0
 echo "Setting hostname based on MAC address of eth0..."
 MAC_SUFFIX=$(ip link show eth0 | grep ether | awk '{print $2}' | tail -c 6 | tr -d ':')
@@ -91,10 +40,14 @@ echo "$NEW_HOSTNAME" | sudo tee /etc/hostname
 sudo sed -i "s/127.0.1.1.*/127.0.1.1\t$NEW_HOSTNAME/" /etc/hosts
 sudo hostnamectl set-hostname "$NEW_HOSTNAME"
 
-### Step 4: Configure Wi-Fi Access Point
+
+### Configure Wi-Fi Access Point
 echo "=========================================="
-echo "Step 4: Configure Wi-Fi Access Point"
+echo "Configure Wi-Fi Access Point"
 echo "=========================================="
+
+# Install necessary packages for Wi-Fi Access Point
+echo "Installing hostapd, dhcpcd5, dnsmasq, and network-manager..."
 sudo apt install -y hostapd dhcpcd5 dnsmasq network-manager
 
 SSID="$NEW_HOSTNAME"
@@ -180,9 +133,10 @@ sudo systemctl restart NetworkManager
 echo "Installing Raspberry Pi UI mods..."
 sudo apt install -y raspberrypi-ui-mods
 
-### Step 5: Configure CAN bus
+
+### Configure CAN bus
 echo "=========================================="
-echo "Step 5: Configure CAN bus"
+echo "Configure CAN bus"
 echo "=========================================="
 # Install necessary packages for CAN bus
 echo "Installing CAN bus packages..."
@@ -251,9 +205,10 @@ EOF
 echo "Enabling and starting CAN setup service..."
 sudo systemctl enable can-setup.service
 
+
 ### Step 6: Configure cooling fan
 echo "=========================================="
-echo "Step 6: Configure cooling fan"
+echo "❄️ Step 6: Configure cooling fan"
 echo "=========================================="
 echo "Configuring cooling fan settings..."
 # Ensure the cooling fan is enabled and configured
@@ -277,6 +232,7 @@ dtparam=fan_temp1=40000,fan_temp1_hyst=3000,fan_temp1_speed=150
 dtparam=fan_temp2=52000,fan_temp2_hyst=4000,fan_temp2_speed=200
 dtparam=fan_temp3=58000,fan_temp3_hyst=5000,fan_temp3_speed=255
 EOF
+
 
 ### Final message
 echo "=========================================="

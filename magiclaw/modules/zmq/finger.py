@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+import re
 import zmq
+import pathlib
 import numpy as np
 from typing import Tuple
 from datetime import datetime
@@ -8,10 +10,25 @@ from magiclaw.modules.protobuf import finger_msg_pb2
 
 
 class FingerPublisher:
+    """
+    FingerPublisher class.
+
+    This class is used to publish Finger messages using ZeroMQ.
+
+    Attributes:
+        context (zmq.Context): The ZMQ context for the publisher.
+        publisher (zmq.Socket): The ZMQ publisher socket.
+    """
+
     def __init__(
-        self, host: str, port: int, hwm: int = 1, conflate: bool = True
+        self,
+        host: str,
+        port: int,
+        hwm: int = 1,
+        conflate: bool = True,
     ) -> None:
-        """Publisher initialization.
+        """
+        Publisher initialization.
 
         Args:
             host (str): The host address of the publisher.
@@ -34,14 +51,18 @@ class FingerPublisher:
         # Bind the address
         self.publisher.bind(f"tcp://{host}:{port}")
 
-        print("Package Finger")
-        print("Message Finger")
-        print(
-            "{\n\tbytes img = 1;\n\trepeated float pose = 2;\n\trepeated float force = 3;\n\trepeated float node = 4;\n}"
-        )
+        # Read the protobuf definition for Finger message
+        # with open(
+        #     pathlib.Path(__file__).parent.parent / "protobuf/finger_msg.proto",
+        # ) as f:
+        #     lines = f.read()
+        # messages = re.search(r"message\s+Finger\s*{{(.*?)}}", lines, re.DOTALL)
+        # body = messages.group(1)
+        # print("Message Finger")
+        # print("{\n" + body + "\n}")
 
-        print("Finger Publisher Initialization Done.")
-        print("{:-^80}".format(""))
+        # print("Finger Publisher Initialization Done.")
+        # print("{:-^80}".format(""))
 
     def publishMessage(
         self,
@@ -50,13 +71,14 @@ class FingerPublisher:
         force: list = np.zeros(6, dtype=np.float32).tolist(),
         node: list = np.zeros(6, dtype=np.float32).tolist(),
     ) -> None:
-        """Publish the message.
+        """
+        Publish the message.
 
         Args:
-            img: The image captured by the camera.
-            pose: The pose of the marker (numpy array or list).
-            force: The force on the bottom surface of the finger (numpy array or list).
-            node: The node displacement of the finger (numpy array or list).
+            img_bytes (bytes): The image captured by the camera.
+            pose (list): The pose of the marker.
+            force (list): The force on the bottom surface of the finger.
+            node (list): The node displacement of the finger.
         """
 
         # Set the message
@@ -71,7 +93,10 @@ class FingerPublisher:
         self.publisher.send(finger.SerializeToString())
 
     def close(self):
-        """Close ZMQ socket and context to prevent memory leaks."""
+        """
+        Close ZMQ socket and context to prevent memory leaks.
+        """
+        
         if hasattr(self, "publisher") and self.publisher:
             self.publisher.close()
         if hasattr(self, "context") and self.context:
@@ -79,6 +104,18 @@ class FingerPublisher:
 
 
 class FingerSubscriber:
+    """
+    FingerSubscriber class.
+
+    This class subscribes to messages from a publisher and parses the received messages.
+
+    Attributes:
+        context (zmq.Context): The ZMQ context for the subscriber.
+        subscriber (zmq.Socket): The ZMQ subscriber socket.
+        poller (zmq.Poller): The ZMQ poller for handling timeouts.
+        timeout (int): The maximum time to wait for a message in milliseconds.
+    """
+
     def __init__(
         self,
         host: str,
@@ -87,7 +124,8 @@ class FingerSubscriber:
         conflate: bool = True,
         timeout: int = 100,
     ) -> None:
-        """Subscriber initialization.
+        """
+        Subscriber initialization.
 
         Args:
             host (str): The host address of the subscriber.
@@ -116,31 +154,32 @@ class FingerSubscriber:
         self.poller = zmq.Poller()
         self.poller.register(self.subscriber, zmq.POLLIN)
         self.timeout = timeout
-        
 
-        print("Package Finger")
-        print("Message Finger")
-        print(
-            "{\n\tbytes img = 1;\n\trepeated float pose = 2;\n\trepeated float force = 3;\n\trepeated float node = 4;\n}"
-        )
+        # Read the protobuf definition for Finger message
+        # with open(
+        #     pathlib.Path(__file__).parent.parent / "protobuf/finger_msg.proto",
+        # ) as f:
+        #     lines = f.read()
+        # messages = re.search(r"message\s+Finger\s*{{(.*?)}}", lines, re.DOTALL)
+        # body = messages.group(1)
+        # print("Message Finger")
+        # print("{\n" + body + "\n}")
 
         print("Finger Subscriber Initialization Done.")
         print("{:-^80}".format(""))
 
     def subscribeMessage(self) -> Tuple[bytes, list, list, list]:
-        """Subscribe the message.
-
-        Args:
-            timeout: Maximum time to wait for a message in milliseconds. Default is 100ms.
+        """
+        Subscribe the message.
 
         Returns:
-            img: The image captured by the camera.
-            pose: The pose of the marker.
-            force: The force on the bottom surface of the finger.
-            node: The node displacement of the finger.
+            img_bytes (bytes): The image captured by the camera.
+            pose (list): The pose of the marker.
+            force (list): The force on the bottom surface of the finger.
+            node (list): The node displacement of the finger.
 
         Raises:
-            zmq.ZMQError: If no message is received within the timeout period.
+            RuntimeError: If no message is received within the timeout period.
         """
 
         # Receive the message
@@ -148,7 +187,7 @@ class FingerSubscriber:
         if self.poller.poll(self.timeout):
             # Receive the message
             msg = self.subscriber.recv()
-            
+
             # Parse the message
             finger = finger_msg_pb2.Finger()
             finger.ParseFromString(msg)
@@ -162,7 +201,10 @@ class FingerSubscriber:
         )
 
     def close(self):
-        """Close ZMQ socket and context to prevent memory leaks."""
+        """
+        Close ZMQ socket and context to prevent memory leaks.
+        """
+        
         if hasattr(self, "subscriber") and self.subscriber:
             self.subscriber.close()
         if hasattr(self, "context") and self.context:

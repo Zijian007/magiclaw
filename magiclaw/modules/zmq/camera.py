@@ -1,12 +1,25 @@
 #!/usr/bin/env python
 
-import sys
+import re
 import zmq
+import pathlib
 import numpy as np
 from magiclaw.modules.protobuf import cam_msg_pb2
-# import cam_msg_pb2  # Assuming cam_msg_pb2 is generated from cam_msg.proto
+
 
 class CameraSubscriber:
+    """
+    CameraSubscriber class.
+
+    This class is used to subscribe to camera messages using ZeroMQ.
+
+    Attributes:
+        context (zmq.Context): The ZeroMQ context.
+        subscriber (zmq.Socket): The ZeroMQ subscriber socket.
+        poller (zmq.Poller): The ZeroMQ poller for handling timeouts.
+        timeout (int): The maximum time to wait for a message in milliseconds.
+    """
+
     def __init__(
         self,
         host: str,
@@ -15,7 +28,8 @@ class CameraSubscriber:
         conflate: bool = True,
         timeout: int = 1000,
     ) -> None:
-        """Subscriber initialization.
+        """
+        Subscriber initialization.
 
         Args:
             host (str): The host address of the subscriber.
@@ -44,62 +58,47 @@ class CameraSubscriber:
         self.poller.register(self.subscriber, zmq.POLLIN)
         self.timeout = timeout
 
-        print("Package Camera")
-        print("Message Camera")
-        print("{\n\tbytes img = 1;\n}")
+        # Read the protobuf definition for Camera message
+        # with open(
+        #     pathlib.Path(__file__).parent.parent / "protobuf/cam_msg.proto",
+        # ) as f:
+        #     lines = f.read()
+        # messages = re.search(r"message\s+Camera\s*{{(.*?)}}", lines, re.DOTALL)
+        # body = messages.group(1)
+        # print("message Camera")
+        # print("{\n" + body + "\n}")
 
         print("Camera Subscriber Initialization Done.")
 
     def subscribeMessage(self) -> np.ndarray:
-        """Subscribe the message.
-
-        Args:
-            timeout: Maximum time to wait for a message in milliseconds. Default is 2000ms.
+        """
+        Subscribe the message.
 
         Returns:
             img: The image captured by the camera.
 
         Raises:
-            zmq.ZMQError: If no message is received within the timeout period.
+            RuntimeError: If no message is received within the timeout period.
         """
         # Wait for message with timeout
         if self.poller.poll(self.timeout):
             # Receive the message
             msg = self.subscriber.recv()
-            
+
             # Parse the message
             cam = cam_msg_pb2.Camera()
             cam.ParseFromString(msg)
-            
+
             return np.frombuffer(cam.img, dtype=np.uint8)
         else:
             raise RuntimeError("No message received within the timeout period.")
 
     def close(self):
-        """Close ZMQ socket and context to prevent memory leaks."""
+        """
+        Close ZMQ socket and context.
+        """
+        
         if hasattr(self, "subscriber") and self.subscriber:
-            try:
-                self.poller.unregister(self.subscriber)
-                self.subscriber.close()
-                self.subscriber = None
-            except Exception as e:
-                print(f"Error closing subscriber: {e}")
+            self.subscriber.close()
         if hasattr(self, "context") and self.context:
-            try:
-                self.context.term()
-                self.context = None
-            except Exception as e:
-                print(f"Error terminating context: {e}")
-                
-                
-if __name__ == "__main__":
-    # Example usage
-    camera_subscriber = CameraSubscriber(host="192.168.4.202", port=5555)
-    try:
-        while True:
-            img = camera_subscriber.subscribeMessage()
-            print(f"Received image of shape: {img.shape}")
-    except KeyboardInterrupt:
-        print("Exiting...")
-    finally:
-        camera_subscriber.close()
+            self.context.term()

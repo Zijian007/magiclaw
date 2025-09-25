@@ -21,9 +21,9 @@ def init_model(model_path: str, device: str = "auto") -> ort.InferenceSession:
     """
 
     if not model_path.endswith(".onnx"):
-        raise ValueError("\033[31mThe model path must end with .onnx\033[0m")
+        raise ValueError("The model path must end with .onnx.")
     if not os.path.exists(model_path):
-        raise ValueError("\033[31mThe model path does not exist\033[0m")
+        raise ValueError("The model path does not exist.")
 
     sess_options = ort.SessionOptions()
     sess_options.intra_op_num_threads = 1
@@ -55,13 +55,13 @@ def get_provider(devices: str = "auto") -> str:
         if "CUDAExecutionProvider" in available_providers:
             return "CUDAExecutionProvider"
         else:
-            raise ValueError("\033[31mCUDAExecutionProvider is not available\033[0m")
+            raise ValueError("CUDAExecutionProvider is not available.")
     elif devices == "hailo":
         if "HailoExecutionProvider" in available_providers:
             return "HailoExecutionProvider"
         else:
-            raise ValueError("\033[31mHailoExecutionProvider is not available\033[0m")
+            raise ValueError("HailoExecutionProvider is not available.")
     elif devices == "auto" or devices == "cpu":
         return "CPUExecutionProvider"
     else:
-        raise ValueError("\033[31mUnsupported device type\033[0m")
+        raise ValueError("Unsupported device type.")
