@@ -132,7 +132,7 @@ class MagiClaw:
             )
             if phone_host is not None:
                 self.phone_cfg.set_host(phone_host)
-            self.zmq_cfg = ZMQConfig()
+            self.zmq_cfg = ZMQConfig(claw_id=self.id)
         except FileNotFoundError as e:
             self.logger.error(f"Failed to load configuration file: {e}")
             raise e
