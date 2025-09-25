@@ -93,4 +93,4 @@ class ZMQConfig:
             host (str): The host address of the bilateral connection.
         """
         
-        self.set("bilateral_host", host)
+        self.bilateral_host = host
