@@ -96,7 +96,6 @@ def standalone_claw_process(
             remaining_time = max(0, (1.0 / loop_rate) - (loop_end - loop_start))
             if remaining_time > 0:
                 time.sleep(remaining_time)
-            loop_start = time.time()
     except KeyboardInterrupt:
         # Handle keyboard interrupt
         logger.info(f"Claw {claw_cfg.claw_id} process terminated by user")
