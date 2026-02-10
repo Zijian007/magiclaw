@@ -22,8 +22,8 @@ mkdir -p ~/miniconda3
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O ~/miniconda3/miniconda.sh
 bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
 rm ~/miniconda3/miniconda.sh
-eval "$(/home/pi/miniconda3/bin/conda shell.bash hook)"
-conda init --all
+eval "$(~/miniconda3/bin/conda shell.bash hook)"
+~/miniconda3/bin/conda init --all
 
 
 ### Set hostname
@@ -131,7 +131,7 @@ sudo systemctl restart NetworkManager
 
 # Ensure UI is installed in case of graphical fallback
 echo "Installing Raspberry Pi UI mods..."
-sudo apt install -y raspberrypi-ui-mods
+sudo apt-get -o Dpkg::Options::="--force-overwrite" install -y raspberrypi-ui-mods
 
 
 ### Configure CAN bus
