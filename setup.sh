@@ -131,7 +131,7 @@ sudo systemctl restart NetworkManager
 
 # Ensure UI is installed in case of graphical fallback
 echo "Installing Raspberry Pi UI mods..."
-sudo apt install -y raspberrypi-ui-mods
+sudo apt-get -o Dpkg::Options::="--force-overwrite" install -y raspberrypi-ui-mods
 
 
 ### Configure CAN bus
