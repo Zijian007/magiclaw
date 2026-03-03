@@ -40,6 +40,18 @@ echo "$NEW_HOSTNAME" | sudo tee /etc/hostname
 sudo sed -i "s/127.0.1.1.*/127.0.1.1\t$NEW_HOSTNAME/" /etc/hosts
 sudo hostnamectl set-hostname "$NEW_HOSTNAME"
 
+# Disable cloud-init from managing hostname to prevent it from reverting after reboot
+echo "Disabling cloud-init hostname management..."
+if [ -f /etc/cloud/cloud.cfg ]; then
+    sudo sed -i 's/preserve_hostname: false/preserve_hostname: true/' /etc/cloud/cloud.cfg
+    echo "Set preserve_hostname to true in cloud.cfg"
+fi
+# Disable cloud-init entirely if it exists
+if [ -d /etc/cloud ]; then
+    sudo touch /etc/cloud/cloud-init.disabled
+    echo "Created cloud-init.disabled file"
+fi
+
 
 ### Configure Wi-Fi Access Point
 echo "=========================================="
