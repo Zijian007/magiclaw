@@ -19,12 +19,14 @@ conda init bash
 if ! grep -q "conda activate magiclaw" ~/.bashrc; then
     echo "conda activate magiclaw" >> ~/.bashrc
 fi
-source ~/.bashrc
 
 ### Install magiclaw
-echo "Activating environment and installing project..."
-conda activate magiclaw
+echo "Installing project in 'magiclaw' environment..."
 cd ~/Documents/magiclaw
+
+# Initialize conda for this script
+eval "$(conda shell.bash hook)"
+conda activate magiclaw
 pip install -e .
 
 ### Get path of run-magiclaw
